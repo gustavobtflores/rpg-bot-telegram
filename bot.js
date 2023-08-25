@@ -11,68 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const menu_1 = require("@grammyjs/menu");
 const grammy_1 = require("grammy");
-const characters = [
-    {
-        name: "Gustavo",
-        level: 100,
-        vocation: "Cavaleiro de Elite",
-        items: [
-            {
-                name: "Espada",
-                weight: 50,
-            },
-            {
-                name: "Escudo",
-                weight: 70,
-            },
-            {
-                name: "Capacete",
-                weight: 30,
-            },
-        ],
-    },
-    {
-        name: "Tacio",
-        level: 85,
-        vocation: "Feiticeiro",
-        items: [
-            {
-                name: "Varinha",
-                weight: 25,
-            },
-            {
-                name: "Túnica",
-                weight: 15,
-            },
-            {
-                name: "Amuleto",
-                weight: 5,
-            },
-        ],
-    },
-    {
-        name: "Lucia",
-        level: 75,
-        vocation: "Paladina",
-        items: [
-            {
-                name: "Besta",
-                weight: 40,
-            },
-            {
-                name: "Armadura",
-                weight: 60,
-            },
-            {
-                name: "Botas",
-                weight: 10,
-            },
-        ],
-    },
-];
+const characters_1 = require("./characters");
+require("dotenv/config");
 function getFormattedCharacters() {
-    return characters
-        .map((character) => {
+    return characters_1.CHARACTERS.map((character) => {
         return `Nome: ${character.name}\n\nLevel: ${character.level}\nClasse: ${character.vocation}\nLista de items: \n${character.items
             .map((item) => `${item.name} - ${item.weight}kg`)
             .join("\n")}\nPeso total: ${character.items.reduce((acc, item) => acc + item.weight, 0)}kg
@@ -82,7 +24,8 @@ function getFormattedCharacters() {
         .join("\n")
         .replace(/^\t+/gm, "");
 }
-const bot = new grammy_1.Bot("6478569656:AAGrrAnUtV0zhxWxs4ts34He1h025MXbD2U");
+const botApiToken = process.env.BOT_API_TOKEN || "";
+const bot = new grammy_1.Bot(botApiToken);
 const menu = new menu_1.Menu("main-menu").text("Ver lista de personagens", (ctx) => {
     ctx.reply(getFormattedCharacters());
 });
