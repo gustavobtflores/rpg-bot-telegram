@@ -1,10 +1,9 @@
 import { Menu } from "@grammyjs/menu";
-import { Bot, Context, session } from "grammy";
+import { Bot, Context, session, InlineKeyboard } from "grammy";
 import "dotenv/config";
 import { type Conversation, type ConversationFlavor, conversations, createConversation } from "@grammyjs/conversations";
 import { getFormattedCharacters } from "./utilities";
 import { CHARACTERS } from "./characters";
-import { Api, InlineKeyboard } from "https://deno.land/x/grammy@v1.18.1/mod.ts";
 
 type MyContext = Context & ConversationFlavor;
 type MyConversation = Conversation<MyContext>;
@@ -19,21 +18,14 @@ const bot = new Bot<MyContext>(botApiToken);
  */
  
 async function addItem(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("Qual o nome do item e o seu peso?\nExemplo: <nome do item>, <peso");
+  await ctx.reply("Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>");
   const { message } = await conversation.wait();
 
   console.log(message);
 
-  const itemModel = /^[a-zA-Z\s]+,\s*\d+,\s*\d+,\s*[a-zA-Z\s]+$/;
-  
-  const test = itemModel.test(message.text);
-  
-  if (!message || !message.text || message.text.trim().length === 0 || test === false) {
-    
-    ctx.reply("Ta errado alguma coisa que tu digitou ai meu colega\n/start");
-    return;
-  }
-  
+const regex = /^[\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,[\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/i;
+  const itemModel = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
+
   const authorId = message.from.id;
   const authorCharacter = CHARACTERS.find((character) => character.id === String(authorId));
   const chatID = message.chat.id;
@@ -51,33 +43,44 @@ async function addItem(conversation: MyConversation, ctx: MyContext) {
   default:
     return ctx.reply("Vocẽ ainda não está cadastrado.");
     // Código a ser executado quando nenhum caso coincide com a expressão
-}
-
+  }
 
   if (!authorCharacter) {
     ctx.reply("Você ainda não possui um personagem.");
     return;
   }
-  var listaItens = message.text.split(',');
+  if(message.text.includes(";")){
+    var listaInventario = message.text.split(';');
+  }else{
+    var listaInventario = message.text.split('\n');
+  }
+  listaInventario = listaInventario.map(item => item.trim());
+  
+  listaInventario.forEach(function(itemInventario, i) {
+  const test = itemModel.test(itemInventario);
+  
+  if (!message || !message.text || message.text.trim().length === 0 || test === false) {
+    
+    ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInventario}`);
+    return;
+  }
+  var listaItens = itemInventario.split(',');
+  
   const item = {
     name: listaItens[0].trim(),
     weight: parseInt(listaItens[1], 10),
-    quantity: listaItens[2],
-    description: listaItens[3]
+    quantity: parseInt(listaItens[2],10),
+    desc: listaItens[3].trim()
   };
-
-  const confirmaAdicao = new InlineKeyboard("Confirma-adição")
-    .text("Sim", (ctx) => {
-      authorCharacter.items.push(item);
-      ctx.reply(`Item ${item.name} adicionado ao personagem ${authorCharacter.name}.`);
-    })
-    .text("Não", (ctx) => {
-      ctx.reply("Aqui eu tenho que fazer o bagulho voltar ao inicio.");
-    });
-  ctx.reply(`Este é o item que deseja adicionar: ${item}\n\n confirma?`,{reply_markup: confirmaAdicao});
+  authorCharacter.items.push(item);
+  ctx.reply(`Item ${item.name} adicionado ao personagem ${authorCharacter.name}.`);
+  })
   
-  ctx.reply(`id desse chat ${message.chat.id}`);
   
+/*  
+      ****  Ideia de perguntar se é realmente essa alteração que a pessoa quer  ****
+ 
+   await ctx.reply(`Este é o item que deseja adicionar:\n ${item.name},  ${item.weight}, ${ite.quantity}, ${item.desc}\n\n confirma?`, {reply_markup: confirmaAdicao});*/
 }
 
 async function movie(conversation: MyConversation, ctx: MyContext) {
@@ -100,23 +103,22 @@ bot.use(createConversation(addItem, "add-item"));
 bot.use(createConversation(movie,"filme"));
 
 const itemMenu = new Menu<MyContext>("item-menu")
+  .text("Você escolheu adicionar um item! Escolha onde:").row()
   .text("Meu inventário", async (ctx) => {
     await ctx.conversation.enter("add-item");
-  }).row()
+  })
   .text("Inventário do cubo", (ctx) => {
     ctx.reply("Ainda não tem cubo para editar");
-  });
+  }).row()
+  .back("Voltar");
 
-
-bot.use(itemMenu);
 
 const mainMenu = new Menu<MyContext>("main-menu")
   .text("Ver lista de personagens", (ctx) => {
     ctx.reply(getFormattedCharacters());
   })
-  .text("Adicionar item", async (ctx) => {
-    await ctx.reply("Escolha que inventário quer adicionar um item:", {reply_markup: itemMenu});
-  }).row()
+  .submenu("Adicionar item", "item-menu")
+  .row()
   .text("Guardar filmes favoritos", async (ctx) => {
     await ctx.conversation.enter("filme");
   });
@@ -124,11 +126,13 @@ const mainMenu = new Menu<MyContext>("main-menu")
 
 bot.use(mainMenu);
 
+mainMenu.register(itemMenu);
 
 bot.command("start", async (ctx) => {
   await ctx.reply("Bem vindo ao bot de itens!", { reply_markup: mainMenu });
 });
 
+/*
 const fs = require('fs');
 // Nome do arquivo que você deseja ler
 const nomeArquivo = 'characters.js';
@@ -146,5 +150,5 @@ numero = numero.trim();
 const numeroNumero = parseInt(numero,10);
 
 console.log('pinto\n',numero,'\n',numeroNumero);
-
+*/
 bot.start();
