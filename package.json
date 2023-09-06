@@ -10,7 +10,7 @@
     "@grammyjs/conversations": "^1.1.2",
     "@grammyjs/menu": "^1.2.1",
     "dotenv": "^16.3.1",
-    "grammy": "^1.11.2"
+    "grammy": "^1.18.1"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
