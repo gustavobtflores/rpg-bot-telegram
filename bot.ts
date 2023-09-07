@@ -18,12 +18,10 @@ const bot = new Bot<MyContext>(botApiToken);
  */
  
 async function addItem(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>");
+  await ctx.reply("Digite o nome do item, o seu peso unitãrio(sem o kg), a quantidade e a descrição, nessa ordem.\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>\nPode adicionar mais de um item separando-os com enter ou ;");
   const { message } = await conversation.wait();
 
   console.log(message);
-
-const regex = /^[\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,[\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/i;
   const itemModel = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
   const authorId = message.from.id;
@@ -76,12 +74,42 @@ const regex = /^[\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d
   ctx.reply(`Item ${item.name} adicionado ao personagem ${authorCharacter.name}.`);
   })
   
-  
 /*  
       ****  Ideia de perguntar se é realmente essa alteração que a pessoa quer  ****
  
    await ctx.reply(`Este é o item que deseja adicionar:\n ${item.name},  ${item.weight}, ${ite.quantity}, ${item.desc}\n\n confirma?`, {reply_markup: confirmaAdicao});*/
 }
+
+async function removeItem(conversation: MyConversation, ctx: MyContext) {
+  await ctx.reply("Escreva qualquer coisa para prosseguir.");
+  const { message } = await conversation.wait();
+
+  
+  const authorId = message.from.id;
+  const authorCharacter = CHARACTERS.find((character) => character.id === String(authorId));
+  const itemCharacter = CHARACTERS[0];
+  
+  console.log()
+  
+  var ulala = [];
+  CHARACTERS.forEach(function(item, i){
+      ulala.push(item.items);
+      console.log(ulala[0][0]);
+  })
+  /*
+  console.log(ulala);
+  console.log(ulala[0]);
+  console.log(ulala[0][0].name);
+  /*
+  await ctx.reply(`Seus itens são:\n${CHARACTERS.find(function(character, i){
+    character.id === authorId;
+    return character[i].items.map((item) => `${item.name} - ${item.weight * item.quantity}(${item.weight})kg, ${item.quantity}Un`);
+  })
+  }`);*/
+}
+
+
+
 
 async function movie(conversation: MyConversation, ctx: MyContext) {
   await ctx.reply("How many favorite movies do you have?");
@@ -101,8 +129,9 @@ bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 bot.use(createConversation(addItem, "add-item"));
 bot.use(createConversation(movie,"filme"));
+bot.use(createConversation(removeItem, "remove-item"));
 
-const itemMenu = new Menu<MyContext>("item-menu")
+const addItemMenu = new Menu<MyContext>("adicionar-item-menu")
   .text("Você escolheu adicionar um item! Escolha onde:").row()
   .text("Meu inventário", async (ctx) => {
     await ctx.conversation.enter("add-item");
@@ -112,12 +141,23 @@ const itemMenu = new Menu<MyContext>("item-menu")
   }).row()
   .back("Voltar");
 
+const removeItemMenu = new Menu<context>("remover-item-menu")
+  .text("Vocẽ escolheu remover um item! Escolha de onde:")
+  .row()
+  .text("Meu inventário", async (ctx) => {
+    await ctx.conversation.enter("remove-item");
+  })
+  .text("Inventário do cubo", (ctx) => {
+    ctx.reply("Ainda não tem cubo para editar")
+  }).row()
+  .back("Voltar");
 
 const mainMenu = new Menu<MyContext>("main-menu")
   .text("Ver lista de personagens", (ctx) => {
     ctx.reply(getFormattedCharacters());
   })
-  .submenu("Adicionar item", "item-menu")
+  .submenu("Adicionar item", "adicionar-item-menu")
+  .submenu("Remover item", "remover-item-menu")
   .row()
   .text("Guardar filmes favoritos", async (ctx) => {
     await ctx.conversation.enter("filme");
@@ -125,8 +165,9 @@ const mainMenu = new Menu<MyContext>("main-menu")
 
 
 bot.use(mainMenu);
+mainMenu.register(addItemMenu);
+mainMenu.register(removeItemMenu);
 
-mainMenu.register(itemMenu);
 
 bot.command("start", async (ctx) => {
   await ctx.reply("Bem vindo ao bot de itens!", { reply_markup: mainMenu });
