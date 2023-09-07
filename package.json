@@ -18,6 +18,6 @@
     "typescript": "^4.7.4"
   },
   "scripts": {
-    "start": "ts-node-dev --respawn --transpile-only bot.ts"
+    "start": "ts-node-dev --respawn --transpile-only ./src/index.ts"
   }
 }

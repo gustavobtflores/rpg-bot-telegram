@@ -1,9 +1,10 @@
-import { Menu } from "@grammyjs/menu";
-import { Bot, Context, session, InlineKeyboard } from "grammy";
-import "dotenv/config";
-import { type Conversation, type ConversationFlavor, conversations, createConversation } from "@grammyjs/conversations";
-import { getFormattedCharacters } from "./utilities";
 import { CHARACTERS } from "./characters";
+import { getFormattedCharacters } from "./utilities";
+import { Conversation, ConversationFlavor, conversations, createConversation, type, type } from "@grammyjs/conversations";
+import { Menu } from "@grammyjs/menu";
+import { Bot, Context, InlineKeyboard, session } from "grammy";
+
+import "dotenv/config";
 
 type MyContext = Context & ConversationFlavor;
 type MyConversation = Conversation<MyContext>;
