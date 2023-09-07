@@ -16,8 +16,8 @@ const itemMenu = new Menu<MyContext>("item-menu")
   .back("Voltar");
 
 const mainMenu = new Menu<MyContext>("main-menu")
-  .text("Ver lista de personagens", (ctx) => {
-    ctx.reply(getFormattedCharacters());
+  .text("Ver lista de personagens", async (ctx) => {
+    ctx.reply(await getFormattedCharacters());
   })
   .submenu("Adicionar item", "item-menu")
   .row();

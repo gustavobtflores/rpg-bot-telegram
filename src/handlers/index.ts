@@ -1,4 +1,6 @@
-import { MyContext, MyConversation } from "../config/botConfig";
+import { InlineKeyboard } from "grammy";
+import { MyContext, MyConversation, bot } from "../config/botConfig";
+import { setItem } from "../config/storage";
 import { CHARACTERS } from "../constants/characters";
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
@@ -16,7 +18,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   const chatID: number = message.chat.id;
 
-  handleChatTypeResponse(chatID, ctx);
+  // await handleChatTypeResponse(chatID, ctx);
 
   if (!authorCharacter) {
     ctx.reply("Você ainda não possui um personagem.");
@@ -25,19 +27,31 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
 
   const inventoryList: string[] = extractInventoryItemsFromMessage(message.text);
 
-  inventoryList.forEach((itemInInventory) => {
+  for (let itemInInventory of inventoryList) {
     if (!isValidItem(itemInInventory)) {
-      ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}`);
+      await ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}`);
+      const keyboard = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
+      await ctx.reply("Quer tentar de novo?", { reply_markup: keyboard });
+
+      const res = await conversation.waitForCallbackQuery(["yes", "no"]);
+
+      if (res.match === "yes") {
+        await addItem(conversation, ctx);
+      } else {
+        ctx.reply("Ok, então não vou adicionar nada.");
+      }
       return;
     }
 
     const parsedItem = parseItemFromInventoryString(itemInInventory);
     authorCharacter.items.push(parsedItem);
     ctx.reply(`Item ${parsedItem.name} adicionado ao personagem ${authorCharacter.name}.`);
-  });
+  }
+
+  await setItem("characters", CHARACTERS);
 }
 
-function handleChatTypeResponse(chatID: number, ctx: MyContext): void {
+async function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
   switch (chatID) {
     case 587760655:
       ctx.reply("isso é um chat privado");

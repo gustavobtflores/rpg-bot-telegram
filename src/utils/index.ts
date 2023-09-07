@@ -1,6 +1,9 @@
-import { CHARACTERS } from "../constants/characters";
+import { getItem } from "../config/storage";
+import { Character } from "../interfaces/character";
 
-export function getFormattedCharacters(): string {
+export async function getFormattedCharacters(): Promise<string> {
+  const CHARACTERS: Character[] = await getItem("characters");
+
   return CHARACTERS.map((character) => {
     return `Nome: ${character.name}\n\nLevel: ${character.level}\nClasse: ${character.vocation}\nLista de items: \n${character.items
       .map((item) => `${item.name} - ${item.weight * item.quantity}(${item.weight})kg`)
