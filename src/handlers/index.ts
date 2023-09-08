@@ -82,6 +82,11 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   await setItem("characters", CHARACTERS);
 }
 
+export async function removeItem(conversation: MyConversation, ctx: MyContext): Promise<void>{
+  ctx.reply("eai meu chapa");
+}
+
+
 async function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
   switch (chatID) {
     case 587760655:
