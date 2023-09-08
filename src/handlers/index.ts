@@ -17,7 +17,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   const authorId: string = String(message.from.id);
   const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   const chatID: number = message.chat.id;
-
+  const modList = [];
   // await handleChatTypeResponse(chatID, ctx);
 
   if (!authorCharacter) {
@@ -25,27 +25,62 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
     return;
   }
 
+  const confirmAdd = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
+
   const inventoryList: string[] = extractInventoryItemsFromMessage(message.text);
 
   for (let itemInInventory of inventoryList) {
     if (!isValidItem(itemInInventory)) {
-      await ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}`);
-      const keyboard = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
-      await ctx.reply("Quer tentar de novo?", { reply_markup: keyboard });
-
+      await ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
+      
       const res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
       if (res.match === "yes") {
         await addItem(conversation, ctx);
       } else {
-        ctx.reply("Ok, então não vou adicionar nada.");
+        return ctx.reply("Ok, então não vou adicionar nada.");
       }
       return;
     }
 
-    const parsedItem = parseItemFromInventoryString(itemInInventory);
-    authorCharacter.items.push(parsedItem);
-    ctx.reply(`Item ${parsedItem.name} adicionado ao personagem ${authorCharacter.name}.`);
+  const parsedItem = parseItemFromInventoryString(itemInInventory);
+  console.log(parsedItem);
+  modList.push(parsedItem);
+  }
+  
+  modList.foreach(function(item, i) {
+    console.log(item);
+    return;
+  });
+  
+  await ctx.reply(`Estes são os itens que quer adiconar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}.`, { reply_markup: confirmAdd });
+
+  var res = await conversation.waitForCallbackQuery(["yes", "no"]);
+  
+  if (res.match === "yes") {
+    
+    authorCharacter.items.push(modList[0]);
+    await ctx.reply(`Itens adicionados ao personagem ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, { reply_markup: confirmAdd});
+    res = await conversation.waitForCallbackQuery(["yes", "no"]);
+   
+   if (res.match === "yes"){
+        await addItem(conversation, ctx);
+    }else{
+      
+        ctx.reply("Ok, obrigado pelos itens!");
+    }
+    
+  } else {
+    await ctx.reply("Ok, então não vou adicionar nada.\n\nQuer tentar de novo?", { reply_markup: confirmAdd});
+    res = await conversation.waitForCallbackQuery(["yes", "no"]);
+    if (res.match === "yes"){
+      
+      await addItem(conversation, ctx);
+  
+    }else{
+      
+       ctx.reply("Ok, estarei aqui se precisar se livrar de algumas coisas haha!");
+    }
   }
 
   await setItem("characters", CHARACTERS);
