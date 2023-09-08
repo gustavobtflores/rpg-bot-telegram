@@ -44,22 +44,18 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
     }
 
   const parsedItem = parseItemFromInventoryString(itemInInventory);
-  console.log(parsedItem);
   modList.push(parsedItem);
   }
   
-  modList.foreach(function(item, i) {
-    console.log(item);
-    return;
-  });
-  
-  await ctx.reply(`Estes são os itens que quer adiconar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}.`, { reply_markup: confirmAdd });
+  await ctx.reply(`Estes são os itens que quer adicionar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}.`, { reply_markup: confirmAdd });
 
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
   
   if (res.match === "yes") {
     
-    authorCharacter.items.push(modList[0]);
+    await modList.forEach((item) => {
+      authorCharacter.items.push(item);
+    });
     await ctx.reply(`Itens adicionados ao personagem ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, { reply_markup: confirmAdd});
     res = await conversation.waitForCallbackQuery(["yes", "no"]);
    
