@@ -23,6 +23,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   }
 
   const chatID: number = message.chat.id;
+  const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   const modList = [];
   const flagAdd = true;
 

@@ -8,6 +8,7 @@
   "license": "ISC",
   "dependencies": {
     "@grammyjs/conversations": "^1.1.2",
+    "@grammyjs/hydrate": "^1.3.1",
     "@grammyjs/menu": "^1.2.1",
     "@grammyjs/parse-mode": "github:grammyjs/parse-mode",
     "@types/node-persist": "^3.1.4",
