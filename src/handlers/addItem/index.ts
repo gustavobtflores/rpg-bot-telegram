@@ -2,7 +2,7 @@ import { InlineKeyboard } from "grammy";
 import { MyContext, MyConversation, bot } from "../../config/botConfig";
 import { setItem } from "../../config/storage";
 import { CHARACTERS } from "../../constants/characters";
-import { handleChatTypeResponse, extractInventoryItemsFromMessage } from "../../handlers";
+import { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem } from "../../handlers";
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
@@ -10,7 +10,6 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   
   
   const authorId: string = String(ctx.update.callback_query.from.id);
-  const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   if (!handleChatTypeResponse(parseInt(authorId), ctx)) {
     return;
   }
@@ -25,18 +24,14 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
 
   const chatID: number = message.chat.id;
   const modList = [];
-
-  if (!authorCharacter) {
-    ctx.reply("Você ainda não possui um personagem.");
-    return;
-  }
+  const flagAdd = true;
 
   const confirmAdd = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
 
-  const inventoryList: string[] = extractInventoryItemsFromMessage(message.text);
+  const inventoryList: string[] = await extractInventoryItemsFromMessage(message.text, flagAdd);
 
   for (let itemInInventory of inventoryList) {
-    if (!isValidItem(itemInInventory)) {
+    if (!isValidItem(itemInInventory, ITEM_REGEX)) {
       await ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
       
       const res = await conversation.waitForCallbackQuery(["yes", "no"]);
@@ -56,7 +51,6 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   await ctx.reply(`Estes são os itens que quer adicionar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}`, { reply_markup: confirmAdd });
 
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
-  console.log(res.update.callback_query.from.id);
   
   if (res.match === "yes") {
     
@@ -87,10 +81,6 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   }
 
   await setItem("characters", CHARACTERS);
-}
-
-function isValidItem(item: string): boolean {
-  return ITEM_REGEX.test(item);
 }
 
 interface ParsedItem {

@@ -25,17 +25,20 @@ export function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<
   return pass;
 }
 
-export function extractInventoryItemsFromMessage(text?: string): string[] {
+export function extractInventoryItemsFromMessage(text?: string, addRemove): string[] {
   if (!text) {
     return [];
   }
+  if(!text.includes("\n") && !addRemove){
+    return text.split(",").map((item) => item.trim());
+  }
   if (!text.includes(";")) {
     return text.split("\n").map((item) => item.trim());
-  }
+  } 
   return text.split(";").map((item) => item.trim());
 }
 
-function isValidItem(item: string): boolean {
+export function isValidItem(item: string, ITEM_REGEX): boolean {
   return ITEM_REGEX.test(item);
 }
 
