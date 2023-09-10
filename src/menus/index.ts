@@ -17,7 +17,7 @@ const itemAddMenu = new Menu<MyContext>("item-add-menu")
 
 const mainMenu = new Menu<MyContext>("main-menu")
   .text("Ver lista de personagens", async (ctx) => {
-    ctx.reply(await getFormattedCharacters());
+    ctx.reply(await getFormattedCharacters(ctx.update.callback_query.from.id));
   }).row()
   .submenu("Adicionar item", "item-add-menu")
   .submenu("Remover item","item-remove-menu");

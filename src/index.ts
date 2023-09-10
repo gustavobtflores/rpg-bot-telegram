@@ -1,5 +1,4 @@
 import { conversations, createConversation } from "@grammyjs/conversations";
-
 import { bot } from "./config/botConfig";
 import { addItem } from "./handlers/addItem";
 import { removeItem } from "./handlers/removeItem";
@@ -16,7 +15,7 @@ mainMenu.register(itemAddMenu);
 mainMenu.register(itemRemoveMenu);
 
 bot.command("start", async (ctx) => {
-  await ctx.reply("Bem vindo ao bot de itens!", { reply_markup: mainMenu });
+  await ctx.reply(`Bem vindo ao bot de itens!`, { reply_markup: mainMenu });
 });
 
 bot.command("add", async (ctx) => {
@@ -29,7 +28,7 @@ bot.command("remove", async (ctx) => {
 
 bot.command("list", async (ctx) => {
   await ctx.reply("Você escolheu listar os itens!");
-  await ctx.reply(await getFormattedCharacters());
+  await ctx.reply(await getFormattedCharacters(ctx.update.message.from.id));
 });
 
 bot.api.setMyCommands([

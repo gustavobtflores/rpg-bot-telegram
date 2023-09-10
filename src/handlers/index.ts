@@ -5,102 +5,27 @@ import { CHARACTERS } from "../constants/characters";
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
-export async function addItem(conversation: MyConversation, ctx: MyContext): Promise<void> {
-  await ctx.reply("Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>");
 
-  const { message } = await conversation.wait();
-
-  if (!message || !message.from || !message.chat) {
-    return;
-  }
-
-  const authorId: string = String(message.from.id);
-  const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
-  const chatID: number = message.chat.id;
-  const modList = [];
-  // await handleChatTypeResponse(chatID, ctx);
-
-  if (!authorCharacter) {
-    ctx.reply("Você ainda não possui um personagem.");
-    return;
-  }
-
-  const confirmAdd = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
-
-  const inventoryList: string[] = extractInventoryItemsFromMessage(message.text);
-
-  for (let itemInInventory of inventoryList) {
-    if (!isValidItem(itemInInventory)) {
-      await ctx.reply(`Ta errado alguma coisa que tu digitou ai meu colega\nO erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
-      
-      const res = await conversation.waitForCallbackQuery(["yes", "no"]);
-
-      if (res.match === "yes") {
-        await addItem(conversation, ctx);
-      } else {
-        return ctx.reply("Ok, então não vou adicionar nada.");
-      }
-      return;
-    }
-
-  const parsedItem = parseItemFromInventoryString(itemInInventory);
-  modList.push(parsedItem);
-  }
-  
-  await ctx.reply(`Estes são os itens que quer adicionar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}.`, { reply_markup: confirmAdd });
-
-  var res = await conversation.waitForCallbackQuery(["yes", "no"]);
-  
-  if (res.match === "yes") {
-    
-    await modList.forEach((item) => {
-      authorCharacter.items.push(item);
-    });
-    await ctx.reply(`Itens adicionados ao personagem ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, { reply_markup: confirmAdd});
-    res = await conversation.waitForCallbackQuery(["yes", "no"]);
-   
-   if (res.match === "yes"){
-        await addItem(conversation, ctx);
-    }else{
-      
-        ctx.reply("Ok, obrigado pelos itens!");
-    }
-    
-  } else {
-    await ctx.reply("Ok, então não vou adicionar nada.\n\nQuer tentar de novo?", { reply_markup: confirmAdd});
-    res = await conversation.waitForCallbackQuery(["yes", "no"]);
-    if (res.match === "yes"){
-      
-      await addItem(conversation, ctx);
-  
-    }else{
-      
-       ctx.reply("Ok, estarei aqui se precisar se livrar de algumas coisas haha!");
-    }
-  }
-
-  await setItem("characters", CHARACTERS);
-}
-
-export async function removeItem(conversation: MyConversation, ctx: MyContext): Promise<void>{
-  ctx.reply("eai meu chapa");
-}
-
-
-async function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
+export function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
+  var pass = false;
   switch (chatID) {
     case 587760655:
-      ctx.reply("isso é um chat privado");
+      ctx.reply("Vocẽ é Tácio, pode passar");
+      pass = true;
       break;
-    case -946652366:
-      ctx.reply("Isso é um grupo");
+    case 619387833:
+      ctx.reply("Vocẽ é Gustavo, pode passar");
+      pass = true;
       break;
     default:
       ctx.reply("Você ainda não está cadastrado.");
+      pass = false;
+      
   }
+  return pass;
 }
 
-function extractInventoryItemsFromMessage(text?: string): string[] {
+export function extractInventoryItemsFromMessage(text?: string): string[] {
   if (!text) {
     return [];
   }

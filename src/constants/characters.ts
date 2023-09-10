@@ -9,19 +9,19 @@ export const CHARACTERS = [
         name: "Espada",
         weight: 50,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Escudo",
         weight: 70,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Capacete",
         weight: 30,
         quantity: 1,
-        description: ""
+        desc: ""
       },
     ],
   },
@@ -35,19 +35,19 @@ export const CHARACTERS = [
         name: "Varinha",
         weight: 25,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Túnica",
         weight: 15,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Amuleto",
         weight: 5,
         quantity: 1,
-        description: ""
+        desc: ""
       },
     ],
   },
@@ -60,19 +60,19 @@ export const CHARACTERS = [
         name: "Besta",
         weight: 40,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Armadura",
         weight: 60,
         quantity: 1,
-        description: ""
+        desc: ""
       },
       {
         name: "Botas",
         weight: 10,
         quantity: 1,
-        description: ""
+        desc: ""
       },
     ],
   },

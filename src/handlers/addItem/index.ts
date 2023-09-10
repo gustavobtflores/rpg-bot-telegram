@@ -2,10 +2,19 @@ import { InlineKeyboard } from "grammy";
 import { MyContext, MyConversation, bot } from "../../config/botConfig";
 import { setItem } from "../../config/storage";
 import { CHARACTERS } from "../../constants/characters";
+import { handleChatTypeResponse, extractInventoryItemsFromMessage } from "../../handlers";
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
 export async function addItem(conversation: MyConversation, ctx: MyContext): Promise<void> {
+  
+  
+  const authorId: string = String(ctx.update.callback_query.from.id);
+  const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
+  if (!handleChatTypeResponse(parseInt(authorId), ctx)) {
+    return;
+  }
+  
   await ctx.reply("Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>");
 
   const { message } = await conversation.wait();
@@ -14,11 +23,8 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
     return;
   }
 
-  const authorId: string = String(message.from.id);
-  const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   const chatID: number = message.chat.id;
   const modList = [];
-  // await handleChatTypeResponse(chatID, ctx);
 
   if (!authorCharacter) {
     ctx.reply("Você ainda não possui um personagem.");
@@ -47,9 +53,10 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   modList.push(parsedItem);
   }
   
-  await ctx.reply(`Estes são os itens que quer adicionar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}.`, { reply_markup: confirmAdd });
+  await ctx.reply(`Estes são os itens que quer adicionar?\n\n${modList.map((item) => `${item.name} - ${item.weight}kg (${item.quantity}Un)`).join("\n")}`, { reply_markup: confirmAdd });
 
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
+  console.log(res.update.callback_query.from.id);
   
   if (res.match === "yes") {
     
@@ -82,34 +89,6 @@ export async function addItem(conversation: MyConversation, ctx: MyContext): Pro
   await setItem("characters", CHARACTERS);
 }
 
-export async function removeItem(conversation: MyConversation, ctx: MyContext): Promise<void>{
-  ctx.reply("eai meu chapa");
-}
-
-
-async function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
-  switch (chatID) {
-    case 587760655:
-      ctx.reply("isso é um chat privado");
-      break;
-    case -946652366:
-      ctx.reply("Isso é um grupo");
-      break;
-    default:
-      ctx.reply("Você ainda não está cadastrado.");
-  }
-}
-
-function extractInventoryItemsFromMessage(text?: string): string[] {
-  if (!text) {
-    return [];
-  }
-  if (!text.includes(";")) {
-    return text.split("\n").map((item) => item.trim());
-  }
-  return text.split(";").map((item) => item.trim());
-}
-
 function isValidItem(item: string): boolean {
   return ITEM_REGEX.test(item);
 }
@@ -118,7 +97,7 @@ interface ParsedItem {
   name: string;
   weight: number;
   quantity: number;
-  description: string;
+  desc: string;
 }
 
 function parseItemFromInventoryString(itemString: string): ParsedItem {
@@ -127,6 +106,6 @@ function parseItemFromInventoryString(itemString: string): ParsedItem {
     name: itemParts[0].trim(),
     weight: parseInt(itemParts[1], 10),
     quantity: parseInt(itemParts[2], 10),
-    description: itemParts[3].trim(),
+    desc: itemParts[3].trim(),
   };
 }
