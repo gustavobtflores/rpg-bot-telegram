@@ -1,26 +1,27 @@
 import { InlineKeyboard } from "grammy";
 import { MyContext, MyConversation, bot } from "../config/botConfig";
 import { setItem } from "../config/storage";
-import { CHARACTERS } from "../constants/characters";
+import { CHARACTERS, playersID } from "../constants/characters";
+import { addItem } from "./addItem";
+import { removeItem } from "./removeItem";
+import { modifyItem } from "./modifyItem";
+import { addCube, removeCube } from "./cube";
+
+// import { addCube } from "./cube/addCube";
+// import { removeCube } from "./cube/removeCube";
+export { addItem, removeItem, modifyItem, addCube, removeCube };
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+,\s*\d+,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
 
-export function handleChatTypeResponse(chatID: number, ctx: MyContext): Promise<void> {
+export function handleChatTypeResponse(chatID: string, ctx: MyContext): Promise<void> {
   var pass = false;
-  switch (chatID) {
-    case 587760655:
-      ctx.reply("Vocẽ é Tácio, pode passar");
-      pass = true;
-      break;
-    case 619387833:
-      ctx.reply("Vocẽ é Gustavo, pode passar");
-      pass = true;
-      break;
-    default:
-      ctx.reply("Você ainda não está cadastrado.");
-      pass = false;
-      
+  const IDs = Object.values(playersID);
+  if(IDs.find((id) => id === chatID)){
+    ctx.reply("Opa, você por aqui!");
+    pass = true;
+  }else{
+    ctx.reply("Você ainda não está cadastrado.");
   }
   return pass;
 }
@@ -57,4 +58,17 @@ function parseItemFromInventoryString(itemString: string): ParsedItem {
     quantity: parseInt(itemParts[2], 10),
     description: itemParts[3].trim(),
   };
+}
+
+export function limitarCasasDecimais(numero, casasDecimais) {
+  // Arredonda o número para as casas decimais desejadas
+  const numeroArredondado = numero.toFixed(casasDecimais);
+
+  // Remove os zeros à direita, exceto se for 0
+  const numeroFormatado = numeroArredondado.replace(/(\.[0-9]*[1-9])0*|\.0*/, "$1");
+
+  // Converte a string formatada de volta para um número
+  const numeroFinal = parseFloat(numeroFormatado);
+
+  return numeroFinal;
 }

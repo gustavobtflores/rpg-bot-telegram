@@ -5,25 +5,13 @@ import { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, 
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
-export async function addItem(conversation: MyConversation, ctx: MyContext, cube): Promise<void> {
-  
-  let enter = "\n\n\n\n\n\n\n\n";
-  
-  let ID = "";
-  let tempCube = cube;
-  if (cube === true){
-    ID = "cube";
-    tempCube = cube;
-  }else{
-    ID = ctx.update.callback_query.from.id;
-    
-    tempCube = false;
-  }
 
-  console.log(enter, tempCube,enter);
+export async function addCube(conversation: MyConversation, ctx: MyContext): Promise<void>{
   
+  const enter = "\n\n\n\n\n\n\n\n";
   const CHARACTERS: Character[] = await catchItem("characters");
   const blank = new InlineKeyboard();
+  const ID = ctx.update.callback_query.from.id;
   const authorId: string = String(ID);
   const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
   if (!handleChatTypeResponse(authorId, ctx)) {
@@ -32,13 +20,13 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
   
   await ctx.reply("Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena");
   
-  
   const { message } = await conversation.wait();
   
   if (!message || !message.from || !message.chat) {
     return;
   }
   
+  console.log(enter,"aqui chegou legal");
   const chatID: number = message.chat.id;
   var modList = [];
   const flagAdd = true;
@@ -56,15 +44,13 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
 
       if (res.match === "yes") {
         ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-        await addItem(conversation, ctx, tempCube);
+        await addItem(conversation, ctx);
       } else {
         return ctx.editMessageText("Ok, então não vou adicionar nada.", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
       }
       return;
     }    
     const parsedItem = parseItemFromInventoryString(itemInInventory);
-    
-    console.log(enter, authorCharacter);
     
     var test = authorCharacter.items.find((index) => index.name.toLowerCase() === parsedItem.name.toLowerCase());
     if (!test){
@@ -104,7 +90,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
       
       if(nonAdd.length !== 0){
         await nonAdd.forEach((item) => {
-        const index = authorCharacter.items.findIndex((i) => i.name.toLowerCase() === item.name.toLowerCase());
+        const index = authorCharacter.items.findIndex((i) => i.name === item.name);
         authorCharacter.items[index].quantity += item.quantity;
         });
       }
@@ -122,7 +108,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
        
       ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
       
-        await addItem(conversation, ctx, tempCube);
+        await addItem(conversation, ctx);
     }else{
       
         ctx.editMessageText("Ok, obrigado pelos itens!", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
@@ -135,7 +121,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
     if (res.match === "yes"){
       
       await ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-      await addItem(conversation, ctx, tempCube);
+      await addItem(conversation, ctx);
   
     }else{
       
@@ -144,6 +130,7 @@ export async function addItem(conversation: MyConversation, ctx: MyContext, cube
   }
 
 }
+
 
 interface ParsedItem {
   name: string;
@@ -161,4 +148,6 @@ function parseItemFromInventoryString(itemString: string): ParsedItem {
     desc: itemParts[3].trim(),
   };
 }
+
+
 

@@ -1,9 +1,19 @@
+
+export const playersID =
+  { Abbadon : "965254444",
+    Tibius : "587760655",
+    Fergus : "960580168",
+    Rowan : "2",
+    Mestre: "744974273",
+    Cubo: "cube"
+  };
+  
 export const CHARACTERS = [
   {
-    id: "619387833",
-    name: "Gustavo",
+    id: playersID.Mestre,
+    name: "Teste",
     level: 100,
-    vocation: "Cavaleiro de Elite",
+    vocation: "Mestre",
     items: [
       {
         name: "Espada",
@@ -26,7 +36,7 @@ export const CHARACTERS = [
     ],
   },
   {
-    id: "587760655",
+    id: playersID.Tibius,
     name: "Tacio",
     level: 85,
     vocation: "Feiticeiro",
@@ -52,28 +62,32 @@ export const CHARACTERS = [
     ],
   },
   {
-    name: "Lucia",
-    level: 75,
-    vocation: "Paladina",
+    id: playersID.Abbadon,
+    name: "Abbadon",
+    level: 100,
+    vocation: "Guerreiro",
     items: [
-      {
-        name: "Besta",
-        weight: 40,
-        quantity: 1,
-        desc: ""
-      },
-      {
-        name: "Armadura",
-        weight: 60,
-        quantity: 1,
-        desc: ""
-      },
-      {
-        name: "Botas",
-        weight: 10,
-        quantity: 1,
-        desc: ""
-      },
+    ],
+  },{
+    id: playersID.Fergus,
+    name: "Fergus",
+    level: 100,
+    vocation: "Guerreiro",
+    items: [
+    ],
+  },{
+    id: playersID.Rowan,
+    name: "Rowan",
+    level: 100,
+    vocation: "Guerreiro",
+    items: [
+    ],
+  },{
+    id: playersID.Cubo,
+    name: "Cubo",
+    level: 100,
+    vocation: "Guerreiro",
+    items: [
     ],
   },
 ];
