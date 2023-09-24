@@ -17,4 +17,11 @@ bot.use(session({ initial: () => ({}) }));
 
 bot.use(hydrate());
 
-export { MyContext, MyConversation, bot };
+
+// const botzao = new GrammyError();
+// botzao.catch((err) =>{
+//   const ctx = err.ctx;
+//   console.log(ctx);
+// });
+
+export { MyContext, MyConversation, bot};

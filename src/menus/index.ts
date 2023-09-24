@@ -1,5 +1,5 @@
 import { Menu } from "@grammyjs/menu";
-import { MyContext } from "../config/botConfig";
+import { MyContext, bot } from "../config/botConfig";
 import { getFormattedCharacters } from "../utils";
 import { playersID } from "../constants/characters.ts";
 
@@ -21,7 +21,13 @@ const itemAddMenu = new Menu<MyContext>("item-add-menu")
 
 const mainMenu = new Menu<MyContext>("main-menu")
   .text("Ver lista de itens", async (ctx) => {
+    try{
+      // console.log("alou")
     ctx.editMessageText(await getFormattedCharacters(ctx.update.callback_query.from.id));
+      console.log("alou");
+    }catch(err){
+      console.log("tchau");
+    }
   }).row()
   .submenu("Adicionar item", "item-add-menu", async (ctx) => {
     ctx.editMessageText("Você escolheu adicionar um item!");
@@ -32,6 +38,8 @@ const mainMenu = new Menu<MyContext>("main-menu")
   // .submenu("Modificar inventário", "item-modify-menu", async (ctx) => {
   // //   ctx.editMessageText("Escolha que inventário vocẽ quer modificar:");
   // });
+  
+  
   
 const itemModifyMenu = new Menu<MyContext>("item-modify-menu")
   .text("Meu inventário", async (ctx) => {
@@ -80,6 +88,8 @@ const listPlayersMenu = new Menu<MyContext>("list-itens-players")
   }).text("Cubo")
   .text("Todos", async (ctx) => {
     ctx.editMessageText(`${await getFormattedCharacters("any", "all")}ˆˆEstes são os itens de todosˆˆ`);
-  });
+  })
+  ;
+  
 
 export { itemRemoveMenu, itemAddMenu, mainMenu, listPlayersMenu, DgMMenu, itemModifyMenu };

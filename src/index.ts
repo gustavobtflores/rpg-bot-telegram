@@ -32,6 +32,7 @@ bot.command("start", async (ctx) => {
   }
 });
 
+
 bot.command("add", async (ctx) => {
   
   console.log(ctx.update.message);
@@ -67,3 +68,5 @@ bot.api.setMyCommands([
 ]);
 
 bot.start();
+
+
