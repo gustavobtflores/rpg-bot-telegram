@@ -1,7 +1,7 @@
 import { conversations, createConversation } from "@grammyjs/conversations";
 import { bot } from "./config/botConfig";
 import { addItem, removeItem, modifyItem, addCube, removeCube } from "./handlers";
-import { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu } from "./menus/";
+import { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications } from "./menus/";
 import { getFormattedCharacters } from "./utils";
 import { CHARACTERS } from ".'/constants/characters";
 
@@ -28,6 +28,9 @@ bot.command("start", async (ctx) => {
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
     
   }else{
+    if(notifications.has(ctx.update.message.from.id)){
+      notifications.delete(ctx.update.message.from.id);
+    }
     await ctx.reply(`Bem vindo ao bot de itens! O que posso carregar por você hoje?`, { reply_markup: mainMenu });
   }
 });
