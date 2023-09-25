@@ -9,7 +9,7 @@ export async function getFormattedCharacters(ID, fun): Promise<string> {
   const authorId: string = String(ID);
   if(fun === "all") {
     
-  return CHARACTERS1.map((character) => {if(character.id !== "744974273"){
+  return CHARACTERS1.map((character) => {if(character.id !== playersID.Mestre && character.id !== playersID.Rowan){
     return `${character.name}\n\nPeso total: ${character.items.reduce((acc, item) => limitarCasasDecimais(acc + item.weight * item.quantity,3), 0)}Kg
         \n---------------------\n
     `;
