@@ -1,19 +1,25 @@
-import storage from "node-persist";
+const storage = require("node-persist");
 
 const storagePath = "../storage";
 
-export const saveItem = async (key: string, value: any) => {
+const saveItem = async (key, value) => {
   await storage.init({ dir: storagePath });
   await storage.updateItem(key, value);
 };
 
-export const deleteItem = async (key: string, value: any) => {
+const deleteItem = async (key, value) => {
   await storage.init({ dir: storagePath });
   await storage.setItem(key, value);
-}
+};
 
-export const catchItem = async (key: string) => {
+const catchItem = async (key) => {
   await storage.init({ dir: storagePath });
   const item = await storage.getItem(key);
   return item;
+};
+
+module.exports = {
+  catchItem,
+  deleteItem,
+  saveItem,
 };

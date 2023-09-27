@@ -1,15 +1,14 @@
-import { conversations, createConversation } from "@grammyjs/conversations";
-import { bot } from "./config/botConfig";
-import { addItem, removeItem, modifyItem, addCube, removeCube } from "./handlers";
-import { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications, deleteP, P } from "./menus/";
-import { getFormattedCharacters } from "./utils";
-import { CHARACTERS } from ".'/constants/characters";
+const { conversations, createConversation } = require("@grammyjs/conversations");
+const { bot } = require("./config/botConfig");
+const { addItem, removeItem, modifyItem, addCube, removeCube } = require("./handlers");
+const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications, deleteP, P } = require("./menus");
+const { getFormattedCharacters } = require("./utils");
 
 bot.use(conversations());
 bot.use(createConversation(addItem, "add-item"));
 bot.use(createConversation(removeItem, "remove-item"));
-bot.use(createConversation(modifyItem,"modify-item"));
-bot.use(createConversation(addCube,"add-cube"));
+bot.use(createConversation(modifyItem, "modify-item"));
+bot.use(createConversation(addCube, "add-cube"));
 bot.use(createConversation(removeCube, "remove-cube"));
 
 bot.use(DgMMenu);
@@ -21,28 +20,19 @@ mainMenu.register(itemRemoveMenu);
 mainMenu.register(itemModifyMenu);
 
 bot.command("start", async (ctx) => {
-  
-  console.log(ctx.update.message);
-  
-  if(notifications.has(ctx.update.message.from.id)){
-      notifications.delete(ctx.update.message.from.id);
-    }
-    
-  if(ctx.update.message.from.id === 744974273){
+  if (notifications.has(ctx.update.message.from.id)) {
+    notifications.delete(ctx.update.message.from.id);
+  }
+
+  if (ctx.update.message.from.id === 744974273) {
     deleteP(9);
-  
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
-    
-  }else{
-    
+  } else {
     await ctx.reply(`*Bem vindo ao bot de itens\\! O que posso carregar por você hoje\?*`, { reply_markup: mainMenu, parse_mode: "MarkdownV2" });
   }
 });
 
-
 bot.command("add", async (ctx) => {
-  
-  console.log(ctx.update.message);
   await ctx.reply("Você escolheu adicionar um item!", { reply_markup: itemAddMenu });
 });
 
@@ -55,25 +45,12 @@ bot.command("list", async (ctx) => {
   await ctx.reply(await getFormattedCharacters(ctx.update.message.from.id));
 });
 
-/*bot.command("numerorifa", async (ctx) => {
-  for(let i=0; i<2 ; i++){
-    const min = Math.ceil(141);
-    const max = Math.floor(155);
-    var numero = Math.floor(Math.random() * ( max - min) +min);
-    console.log(numero);
-   ctx.reply(`Os numeros da rifa de gustavo é: ${numero}`);
-  }
-});*/
-
-
 bot.api.setMyCommands([
   { command: "start", description: "Inicia o bot" },
   { command: "add", description: "Adiciona um item ao inventário" },
   { command: "remove", description: "Remove um item do inventário" },
   { command: "list", description: "Lista os itens do inventário de todos os personagens" },
-  //{ command: "numerorifa", description: 'rifa'},
+  // { command: "numerorifa", description: 'rifa' },
 ]);
 
 bot.start();
-
-
