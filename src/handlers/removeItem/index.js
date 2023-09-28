@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais } = require("..");
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
