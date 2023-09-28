@@ -19,6 +19,6 @@
     "parse-mode": "^0.1.4"
   },
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node --trace-warnings ./src/index.js"
   }
 }

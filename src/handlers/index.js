@@ -1,13 +1,5 @@
-// Importing modules
 const charactersConstants = require("../constants/characters");
 const playersID = charactersConstants.playersID;
-
-const addItem = require("./addItem").addItem;
-const removeItem = require("./removeItem").removeItem;
-const modifyItem = require("./modifyItem").modifyItem;
-const cube = require("./cube");
-const addCube = cube.addCube;
-const removeCube = cube.removeCube;
 
 function handleChatTypeResponse(chatID, ctx) {
   var pass = false;
@@ -52,11 +44,6 @@ function limitarCasasDecimais(numero, casasDecimais) {
 }
 
 module.exports = {
-  addItem,
-  removeItem,
-  modifyItem,
-  addCube,
-  removeCube,
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
   isValidItem,
