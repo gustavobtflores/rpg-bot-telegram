@@ -1,6 +1,6 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, addCube, removeCube } = require("./handlers/imports");
+const { addItem, removeItem, modifyItem, addCube, removeCube } = require("./handlers/imports");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications, deleteP, P } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
