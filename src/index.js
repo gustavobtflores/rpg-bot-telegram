@@ -1,13 +1,13 @@
-const { conversations, createConversation } = require("@grammyjs/conversations");
+const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube } = require("./handlers");
+const { addItem, removeItem, addCube, removeCube } = require("./handlers/imports");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications, deleteP, P } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
 bot.use(conversations());
+bot.use(createConversation(modifyItem, "modify-item"));
 bot.use(createConversation(addItem, "add-item"));
 bot.use(createConversation(removeItem, "remove-item"));
-bot.use(createConversation(modifyItem, "modify-item"));
 bot.use(createConversation(addCube, "add-cube"));
 bot.use(createConversation(removeCube, "remove-cube"));
 
@@ -45,12 +45,13 @@ bot.command("list", async (ctx) => {
   await ctx.reply(await getFormattedCharacters(ctx.update.message.from.id));
 });
 
+
 bot.api.setMyCommands([
   { command: "start", description: "Inicia o bot" },
   { command: "add", description: "Adiciona um item ao inventário" },
   { command: "remove", description: "Remove um item do inventário" },
-  { command: "list", description: "Lista os itens do inventário de todos os personagens" },
-  // { command: "numerorifa", description: 'rifa' },
+  { command: "list", description: "Lista os itens do inventário do seu personagem" },
+  // { command: "teste", description: 'so pra testar' },
 ]);
 
 bot.start();
