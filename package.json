@@ -19,6 +19,10 @@
     "parse-mode": "^0.1.4"
   },
   "scripts": {
-    "start": "node --trace-warnings ./src/index.js"
+    "start": "node --trace-warnings ./src/index.js",
+    "build": "esbuild ./api/bot.js --bundle --platform=node --outfile=./build/bot.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.19.4"
   }
 }
