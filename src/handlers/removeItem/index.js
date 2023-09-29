@@ -54,7 +54,7 @@ async function removeItem(conversation, ctx, cube) {
 
   await ctx.reply(
     `Confira os itens que quer remover:\n\n${listItemRemove
-      .map((item) => `- ${item.name}: ${item.quantity}Un - ${item.weight}Kg => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
+      .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
       .join("\n\n")}\n\nPeso total a ser removido: ${listItemRemove.reduce((acc, item) => limitarCasasDecimais(acc + item.weight * item.quantity, 3), 0)}Kg - Confirma?`,
     { reply_markup: confirmRemove }
   );
@@ -80,7 +80,7 @@ async function removeItem(conversation, ctx, cube) {
       await deleteItem("characters", CHARACTERS);
     });
 
-    await ctx.editMessageText(`Itens removidos do personagem ${authorCharacter.name}.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
+    await ctx.editMessageText(`Itens removidos do inventário do ${authorCharacter.name}.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
 
     //   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
 

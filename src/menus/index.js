@@ -40,23 +40,23 @@ const mainMenu = new Menu("main-menu")
   )
   .row()
   .submenu("Adicionar item", "item-add-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu adicionar um item!");
+    ctx.editMessageText("Você escolheu adicionar um item! Escolha onde");
   })
   .submenu("Remover item", "item-remove-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu remover um item! Escolha de onde.");
+    ctx.editMessageText("Você escolheu remover um item! Escolha de onde");
+  })
+  .submenu("Modificar item", "item-modify-menu", async (ctx) => {
+    ctx.editMessageText("Você escolheu modificar um item! Escolha de onde");
   });
-
-// .submenu("Modificar inventário", "item-modify-menu", async (ctx) => {
-// //   ctx.editMessageText("Escolha que inventário vocẽ quer modificar:");
-// });
 
 const itemModifyMenu = new Menu("item-modify-menu")
   .text("Meu inventário", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-item");
   })
-  .text("Inventário do cubo", (ctx) => {
-    ctx.reply("Ainda não tem cubo para editar");
+  .text("Inventário do cubo", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("modify-cube");
   })
   .row()
   .back("⏪ Voltar", async (ctx) => {

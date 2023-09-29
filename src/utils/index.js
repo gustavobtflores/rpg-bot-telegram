@@ -12,7 +12,7 @@ const getFormattedCharacters = async (ID, fun) => {
       return `${character.name}\n\nPeso total: ${totalWeight}Kg\n---------------------\n`;
     } else if (authorId === character.id) {
       const itemList = character.items
-        .map((item) => `- ${item.name}: ${item.quantity}Un - ${item.weight}Kg => ${Number((item.weight * item.quantity).toFixed(3))}Kg\nDescrição: ${item.desc}`)
+        .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${Number((item.weight * item.quantity).toFixed(3))}Kg\nDescrição: ${item.desc}`)
         .join("\n\n");
 
       return `Lista de items: \n\n${itemList}\n\nPeso total: ${totalWeight}Kg\n---------------------\n`;

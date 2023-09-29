@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais } = require('../../handlers');
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString } = require('../../handlers');
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
@@ -28,7 +28,7 @@ async function addItem(conversation, ctx, cube) {
   }
 
   await ctx.reply(
-    "Qual o nome do item e o seu peso?\nModelo: <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena"
+    "Escreva o item que quer adiconar seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena"
   );
 
   const { message } = await conversation.wait();
@@ -46,7 +46,7 @@ async function addItem(conversation, ctx, cube) {
   const inventoryList = await extractInventoryItemsFromMessage(message.text, flagAdd);
   for (let itemInInventory of inventoryList) {
     if (!isValidItem(itemInInventory, ITEM_REGEX)) {
-      await ctx.reply(`Houve um probelma ao identificar um dos itens, erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
+      await ctx.reply(`Houve um problema ao identificar um dos itens, erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
 
       var res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
@@ -58,7 +58,7 @@ async function addItem(conversation, ctx, cube) {
       }
       return;
     }
-    const parsedItem = parseItemFromInventoryString(itemInInventory);
+    const parsedItem = await parseItemFromInventoryString(itemInInventory);
 
     var test = authorCharacter.items.find((index) => index.name.toLowerCase() === parsedItem.name.toLowerCase());
     if (!test) {
@@ -75,14 +75,14 @@ async function addItem(conversation, ctx, cube) {
   } else if (nonAdd.length === 0) {
     ctx.reply(
       `Estes itens serão adicionados:\n\n${modList
-        .map((item) => `- ${item.name}: ${item.quantity}Un - ${item.weight}Kg => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
+        .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
         .join("\n\n")}\n\nPeso total a ser adicionado: ${modList.reduce((acc, item) => acc + limitarCasasDecimais(item.weight * item.quantity, 3), 0)}Kg - Confirma?`,
       { reply_markup: confirmAdd }
     );
   } else {
     ctx.reply(
       `Estes itens serão adicionados:\n\n${modList
-        .map((item) => `- ${item.name}: ${item.quantity}Un - ${item.weight}Kg => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
+        .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
         .join("\n\n")}\n\nEstes itens serão somados aos itens já existentes no seu inventário:\n\n${nonAdd
         .map((item) => ` - ${item.name} => ${item.quantity}Un`)
         .join("\n\n")}\n\nPeso total a ser adicionado: ${limitarCasasDecimais(
@@ -113,7 +113,7 @@ async function addItem(conversation, ctx, cube) {
       saveItem("characters", CHARACTERS);
     });
 
-    await ctx.editMessageText(`Itens adicionados ao personagem ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, {
+    await ctx.editMessageText(`Itens adicionados ao inventário do ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, {
       reply_markup: confirmAdd,
       message_id: res.update.callback_query.message.message_id,
     });
@@ -140,17 +140,7 @@ async function addItem(conversation, ctx, cube) {
   }
 }
 
-function parseItemFromInventoryString(itemString) {
-  const itemParts = itemString.split(",");
-  return {
-    name: itemParts[0].trim(),
-    weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
-    quantity: parseFloat(itemParts[2], 10),
-    desc: itemParts[3].trim(),
-  };
-}
 
 module.exports = {
   addItem,
-  parseItemFromInventoryString,
 };

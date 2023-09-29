@@ -42,9 +42,21 @@ function limitarCasasDecimais(numero, casasDecimais) {
   return numeroFinal;
 }
 
+
+function parseItemFromInventoryString(itemString) {
+  const itemParts = itemString.split(",");
+  return {
+    name: itemParts[0].trim(),
+    weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
+    quantity: parseFloat(itemParts[2], 10),
+    desc: itemParts[3].trim(),
+  };
+}
+
 module.exports = {
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
   isValidItem,
-  limitarCasasDecimais
+  limitarCasasDecimais,
+  parseItemFromInventoryString
 };

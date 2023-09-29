@@ -1,6 +1,6 @@
 const { addItem } = require("./addItem");
 const { removeItem } = require("./removeItem")
-const { addCube, removeCube } = require("./cube");
+const { addCube, removeCube, modifyCube } = require("./cube");
 const { modifyItem } = require("./modifyItem");
 
 module.exports = {
@@ -8,5 +8,6 @@ module.exports = {
   removeCube,
   removeItem,
   addItem,
-  modifyItem
+  modifyItem,
+  modifyCube
 }

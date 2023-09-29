@@ -1,6 +1,6 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube } = require("./handlers/imports");
+const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube } = require("./handlers/imports");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, toggleNotifications, notifications, deleteP, P } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
@@ -10,6 +10,7 @@ bot.use(createConversation(addItem, "add-item"));
 bot.use(createConversation(removeItem, "remove-item"));
 bot.use(createConversation(addCube, "add-cube"));
 bot.use(createConversation(removeCube, "remove-cube"));
+bot.use(createConversation(modifyCube, "modify-cube"))
 
 bot.use(DgMMenu);
 DgMMenu.register(listPlayersMenu);
@@ -32,25 +33,29 @@ bot.command("start", async (ctx) => {
   }
 });
 
-bot.command("add", async (ctx) => {
-  await ctx.reply("Você escolheu adicionar um item!", { reply_markup: itemAddMenu });
+bot.command("adicionar", async (ctx) => {
+  await ctx.reply("Você escolheu adicionar um item! Escolha onde", { reply_markup: itemAddMenu });
 });
 
-bot.command("remove", async (ctx) => {
-  await ctx.reply("Vocẽ escolheu remover um item!", { reply_markup: itemRemoveMenu });
+bot.command("remover", async (ctx) => {
+  await ctx.reply("Você escolheu remover um item! Escolha de onde", { reply_markup: itemRemoveMenu });
 });
 
-bot.command("list", async (ctx) => {
+bot.command("listar", async (ctx) => {
   await ctx.reply("Você escolheu listar os itens!");
   await ctx.reply(await getFormattedCharacters(ctx.update.message.from.id));
+});
+bot.command("modificar", async (ctx) => {
+  await ctx.reply("Você escolheu modificar um item! Escolha de onde", { reply_markup: itemModifyMenu});
 });
 
 
 bot.api.setMyCommands([
   { command: "start", description: "Inicia o bot" },
-  { command: "add", description: "Adiciona um item ao inventário" },
-  { command: "remove", description: "Remove um item do inventário" },
-  { command: "list", description: "Lista os itens do inventário do seu personagem" },
+  { command: "adicionar", description: "Adiciona um item ao inventário" },
+  { command: "remover", description: "Remove um item do inventário" },
+  { command: "modificar", description: "Modifica itens do inventário" },
+  { command: "listar", description: "Lista os itens do inventário do seu personagem" },
   // { command: "teste", description: 'so pra testar' },
 ]);
 
