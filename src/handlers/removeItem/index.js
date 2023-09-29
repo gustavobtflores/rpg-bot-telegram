@@ -26,7 +26,7 @@ async function removeItem(conversation, ctx, cube) {
   if (!handleChatTypeResponse(authorId, ctx)) {
     return;
   }
-  ctx.reply(`Estes são seus itens no momento:\n\n${await getFormattedCharacters(authorId)}\nEscolha quais itens quer remover separando-os por , ou enter.`, { reply_markup: blank });
+  ctx.reply(`Estes são seus itens no momento:\n\n${await getFormattedCharacters(authorId,true, "allItems")}\nEscolha quais itens quer remover separando-os por , ou enter.`, { reply_markup: blank });
 
   const { message } = await conversation.wait();
 

@@ -2,6 +2,7 @@ const { addItem } = require("./addItem");
 const { removeItem } = require("./removeItem")
 const { addCube, removeCube, modifyCube } = require("./cube");
 const { modifyItem } = require("./modifyItem");
+const { equipItem, unequipItem } = require("./equipItem");
 
 module.exports = {
   addCube,
@@ -9,5 +10,7 @@ module.exports = {
   removeItem,
   addItem,
   modifyItem,
-  modifyCube
+  modifyCube,
+  equipItem,
+  unequipItem
 }

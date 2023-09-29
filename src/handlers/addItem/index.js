@@ -99,6 +99,7 @@ async function addItem(conversation, ctx, cube) {
     await conversation.external(async () => {
       await modList.forEach((item) => {
         var test = authorCharacter.items.find((index) => index.name.toLowerCase() === item.name.toLowerCase());
+        item.equipped = true;
         if (!test) {
           authorCharacter.items.push(item);
         }
