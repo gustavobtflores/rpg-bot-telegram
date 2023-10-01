@@ -59,7 +59,7 @@ const listItemsMenu = new Menu("list-items-menu")
     }).row()
     .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! O que posso carregar por você hoje?");
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
     });
   
 
@@ -75,25 +75,99 @@ const itemAddMenu = new Menu("item-add-menu")
   .row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! O que posso carregar por você hoje?");
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
 
 const mainMenu = new Menu("main-menu")
-  .submenu("Listar itens", "list-items-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu listar seus itens! Escolha de onde");
+  .submenu("Principal", "inventory-menu", async (ctx) => {
+    ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
   })
+  .submenu("Cubo", "cube-menu", async (ctx) => {
+    ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
+  });
+  
+  
+const inventoryMenu = new Menu("inventory-menu")
+  .text(
+    (ctx) => (ctx.from && P[0].has("equipped") ?"❌ Listar equipados" : "⭕ Listar equipados"),
+    async (ctx) => {
+      deleteP(0);
+      toggleP("equipped", 0);
+
+      if (P[0].has("equipped")) {
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true)}ˆˆEstes são os itens equipadosˆˆ`);
+      } else {
+        ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
+      }
+    })
+  .text(
+    (ctx) => (ctx.from && P[1].has("unequipped") ? "❌ Listar desequipados" : "⭕ Listar desequipados"),
+    async (ctx) => {
+      deleteP(1);
+      toggleP("unequipped", 1);
+
+      if (P[1].has("unequipped")) {
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false)}ˆˆEstes são os itens desequipadosˆˆ`);
+      } else {
+        ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
+      }
+    })
   .row()
-  .submenu("Adicionar item", "item-add-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu adicionar um item! Escolha onde");
+  .text("Adicionar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("add-item");
   })
-  .submenu("Remover item", "item-remove-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu remover um item! Escolha de onde");
+  .text("Remover itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("remove-item");
+  })
+  .text("Modificar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("modify-item");
   }).row()
-  .submenu("Modificar item", "item-modify-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu modificar um item! Escolha de onde");
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
-  .submenu("Equipar/Desequipar Itens","equip-item-menu", async (ctx) => {
-    ctx.editMessageText("Vocẽ escolheu equipar ou desequipar um item!");
+  .text("Equipar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("equip-item");
+  })
+  .text("Desequipar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("unequip-item");
+  });
+  
+  
+const cubeMenu = new Menu("cube-menu")
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+  })
+  .text(
+    (ctx) => (ctx.from && P[2].has("cube") ? "❌ Listar itens" : "⭕ Listar itens"),
+    async (ctx) => {
+      deleteP(2);
+      toggleP("cube", 2);
+
+      if (P[2].has("cube")) {
+        ctx.editMessageText(`${await getFormattedCharacters("cube", true, "allItems")}ˆ˜Estes são os no cuboˆˆ`);
+      } else {
+        ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
+      }
+    })
+  .row()
+  .text("Adicionar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("add-cube");
+  })
+  .text("Remover itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("remove-cube");
+  })
+  .text("Modificar itens", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("modify-cube");
   });
 
 const itemModifyMenu = new Menu("item-modify-menu")
@@ -108,7 +182,7 @@ const itemModifyMenu = new Menu("item-modify-menu")
   .row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! O que posso carregar por você hoje?");
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
 
 const itemRemoveMenu = new Menu("item-remove-menu")
@@ -123,7 +197,7 @@ const itemRemoveMenu = new Menu("item-remove-menu")
   .row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! O que posso carregar por você hoje?");
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
   
 const equipItemMenu = new Menu("equip-item-menu")
@@ -138,7 +212,7 @@ const equipItemMenu = new Menu("equip-item-menu")
   .row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
-    ctx.editMessageText("Vocẽ escolheu equipar ou desequipar um item!");
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
 
 const DgMMenu = new Menu("Dungeon-Master-menu")
@@ -230,5 +304,7 @@ module.exports = {
   DgMMenu,
   itemModifyMenu,
   listItemsMenu,
-  equipItemMenu
+  equipItemMenu,
+  cubeMenu,
+  inventoryMenu
 };

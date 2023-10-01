@@ -103,9 +103,6 @@ async function modifyItem(conversation, ctx, cube) {
       .join("\n\n")}\n\nConfirma?`,
     { reply_markup: confirmModify }
   );
-  
-  console.log(enter, inventoryList, enter, authorCharacter.items, enter);
-
 
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
