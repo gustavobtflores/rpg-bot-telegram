@@ -61,7 +61,7 @@ async function modifyItem(conversation, ctx, cube) {
   for (let itemToModify of inventoryList) {
     let item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToModify.toLowerCase()) };
 
-    ctx.reply(`Você irá modificar o item:\n\n ${item.name}: ${item.quantity}Un - ${item.weight}Kg => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}
+    ctx.reply(`Você irá modificar o item:\n\n ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}
     \n\nEscreva as alterações que deseja fazer seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nExemplo1:\n escudo, 2, 1, de metal`);
 
     let { message: modified } = await conversation.wait();
