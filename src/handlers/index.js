@@ -4,7 +4,6 @@ function handleChatTypeResponse(chatID, ctx) {
   var pass = false;
   const IDs = Object.values(playersID);
   if (IDs.find((id) => id === chatID)) {
-    ctx.reply("Opa, você por aqui!");
     pass = true;
   } else {
     ctx.reply("Você ainda não está cadastrado.");
@@ -44,7 +43,9 @@ function limitarCasasDecimais(numero, casasDecimais) {
 
 
 function parseItemFromInventoryString(itemString) {
-  const itemParts = itemString.split(",");
+  const itemSplit = itemString.split(",");
+  const itemParts = [...itemSplit.slice(0, 3), itemSplit.slice(3).join(',')];
+
   return {
     name: itemParts[0].trim(),
     weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
