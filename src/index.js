@@ -1,8 +1,12 @@
-const { conversations, createConversation, } = require("@grammyjs/conversations");
+const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
 const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem } = require("./handlers/imports");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipItemMenu, cubeMenu, inventoryMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
+
+const weblink = "https://rpg-tel-bot-rules.vercel.app/";
+const botPrivate = bot.chatType("private");
+const botGroup = bot.chatType("group");
 
 bot.use(conversations());
 bot.use(createConversation(modifyItem, "modify-item"));
@@ -12,7 +16,7 @@ bot.use(createConversation(addCube, "add-cube"));
 bot.use(createConversation(removeCube, "remove-cube"));
 bot.use(createConversation(modifyCube, "modify-cube"));
 bot.use(createConversation(equipItem, "equip-item"));
-bot.use(createConversation(unequipItem,"unequip-item"));
+bot.use(createConversation(unequipItem, "unequip-item"));
 
 bot.use(DgMMenu);
 DgMMenu.register(listPlayersMenu);
@@ -47,12 +51,26 @@ bot.command("listar", async (ctx) => {
   await ctx.reply("Você escolheu listar seus itens! Escolha de onde", { reply_markup: listItemsMenu });
 });
 bot.command("modificar", async (ctx) => {
-  await ctx.reply("Você escolheu modificar um item! Escolha de onde", { reply_markup: itemModifyMenu});
+  await ctx.reply("Você escolheu modificar um item! Escolha de onde", { reply_markup: itemModifyMenu });
 });
-bot.command("equip", async (ctx) =>{
-  await ctx.reply("Vocẽ escolheu equipar ou desequipar um item!", { reply_markup: equipItemMenu});
+bot.command("equip", async (ctx) => {
+  await ctx.reply("Vocẽ escolheu equipar ou desequipar um item!", { reply_markup: equipItemMenu });
 });
 
+botPrivate.command("regras", async (ctx) => {
+  await ctx.reply(`Abra as regras no botão abaixo`, { reply_markup: { keyboard: [[{ text: "Abrir regras", web_app: { url: weblink } }]] } });
+});
+
+botGroup.command("regras", async (ctx) => {
+  await ctx.reply(`Regras do RPG`, { reply_markup: { inline_keyboard: [[{text: "Abrir regras", url: weblink}]] } });
+});
+
+bot.catch((err) => {
+  const ctx = err.ctx;
+  console.error(`Error while handling update ${ctx.update.update_id}:`);
+  const e = err.error;
+  console.error(e);
+});
 
 // bot.command("broadcast", async (ctx) => {
 //   await ctx.reply("       Olá jogador!\n\nAgora já posso modificar os seus itens e também guardar seus itens sem interferir no seu peso simplesmente equipando e desequipando do seu inventário principal. Vale notar que os itens desequipados não vão constar para o nosso saudoso mestre então lembre-se: se não está equipado não está com você! Portanto desequipe itens que você guardou ou soltou por ai ou se simplesmente não deseja excluir completamente dos seus registros.\n\nPeço que teste tudo o que puder e depois fala qualquer coisa la no OFF e por hoje é isso! Para a próxima vez pretendo poder guardar seus itens em lugares separados então até a próxima!", {chat_id: 965254444});
@@ -66,9 +84,9 @@ bot.api.setMyCommands([
   { command: "remover", description: "Remove um item do inventário" },
   { command: "modificar", description: "Modifica itens do inventário" },
   { command: "listar", description: "Lista os itens do inventário do seu personagem" },
-  { command: "equip", description: 'Equipar/desequipar itens' },
+  { command: "equip", description: "Equipar/desequipar itens" },
   // { command: "broadcast", description: 'Equipar/desequipar itens' },
-  
+  { command: "regras", description: "Regras" },
 ]);
 
 bot.start();
