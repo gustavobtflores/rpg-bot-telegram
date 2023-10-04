@@ -4,9 +4,7 @@ const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipI
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipItemMenu, cubeMenu, inventoryMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
-const weblink = "https://rpg-tel-bot-rules.vercel.app/";
-const botPrivate = bot.chatType("private");
-const botGroup = bot.chatType("group");
+const weblink = "http://t.me/oEscudeiro_bot/DGrules";
 
 bot.use(conversations());
 bot.use(createConversation(modifyItem, "modify-item"));
@@ -57,19 +55,9 @@ bot.command("equip", async (ctx) => {
   await ctx.reply("Vocẽ escolheu equipar ou desequipar um item!", { reply_markup: equipItemMenu });
 });
 
-botPrivate.command("regras", async (ctx) => {
-  await ctx.reply(`Abra as regras no botão abaixo`, { reply_markup: { keyboard: [[{ text: "Abrir regras", web_app: { url: weblink } }]] } });
-});
-
-botGroup.command("regras", async (ctx) => {
-  await ctx.reply(`Regras do RPG`, { reply_markup: { inline_keyboard: [[{text: "Abrir regras", url: weblink}]] } });
-});
-
-bot.catch((err) => {
-  const ctx = err.ctx;
-  console.error(`Error while handling update ${ctx.update.update_id}:`);
-  const e = err.error;
-  console.error(e);
+ bot.command("regras", async (ctx) => {
+  await ctx.reply("Regras!", { reply_markup: { inline_keyboard: [[{text: "📖", url: weblink }]] } });
+  ctx.api.deleteMessage(ctx.update.message.chat.id, ctx.update.message.message_id);
 });
 
 // bot.command("broadcast", async (ctx) => {
