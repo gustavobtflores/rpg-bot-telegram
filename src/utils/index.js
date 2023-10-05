@@ -4,15 +4,18 @@ const { playersID, CHARACTERS } = require("../constants/characters");
 const getFormattedCharacters = async (ID, equipped, fun) => {
   const CHARACTERS1 = await catchItem("characters");
   const authorId = String(ID);
+  // const statusObjet = {
+  //   pv: 0,
+  //   pf: 0,
+  //   pm: 0,
+  //   desc: ""
+  // }
   // CHARACTERS1.forEach(character => {
-  //   character.items.forEach(item => {
-  //     item.equipped = true;
-      
-  //   });
-    
+  //     character.status = { ...statusObjet};
   // });
+  console.log(CHARACTERS1);
   
-  // deleteItem("characters", CHARACTERS1);
+  deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
     if(fun !== "allItems"){

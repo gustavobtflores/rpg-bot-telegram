@@ -1,7 +1,7 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem } = require("./handlers/imports");
-const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipItemMenu, cubeMenu, inventoryMenu } = require("./menus");
+const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status } = require("./handlers/imports");
+const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipItemMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
 const weblink = "http://t.me/oEscudeiro_bot/DGrules";
@@ -15,9 +15,12 @@ bot.use(createConversation(removeCube, "remove-cube"));
 bot.use(createConversation(modifyCube, "modify-cube"));
 bot.use(createConversation(equipItem, "equip-item"));
 bot.use(createConversation(unequipItem, "unequip-item"));
+bot.use(createConversation(status, "status"));
 
 bot.use(DgMMenu);
 DgMMenu.register(listPlayersMenu);
+DgMMenu.register(playerss);
+playerss.register(changeStatus);
 
 bot.use(mainMenu);
 mainMenu.register(itemAddMenu);
@@ -28,11 +31,19 @@ mainMenu.register(equipItemMenu);
 mainMenu.register(cubeMenu);
 mainMenu.register(inventoryMenu);
 
+
+bot.command("publish", async (ctx) => {
+  await statusReset();
+  await ctx.reply("Escolhe de quem vc quer alterar os status.", { reply_markup: playerss, });
+});  
+  
 bot.command("start", async (ctx) => {
   deleteP(9);
-  if (ctx.update.message.from.id === 744974273) {
+   if (ctx.update.message.from.id === 744974273) {
+    await statusReset();
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
-  } else {
+   } else {
+    console.log(statusName);
     await ctx.reply("Bem vindo ao bot de itens! Que inventário quer usar?", { reply_markup: mainMenu });
   }
 });

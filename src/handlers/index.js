@@ -1,4 +1,5 @@
 const { CHARACTERS, playersID } = require("../constants/characters");
+const { statusValue, idStatus, P} = require("../menus");
 
 function handleChatTypeResponse(chatID, ctx) {
   var pass = false;
@@ -59,5 +60,9 @@ module.exports = {
   extractInventoryItemsFromMessage,
   isValidItem,
   limitarCasasDecimais,
-  parseItemFromInventoryString
+  parseItemFromInventoryString,
+  statusValue,
+  idStatus,
+  playersID,
+  P
 };

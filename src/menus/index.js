@@ -1,4 +1,4 @@
-const { Menu } = require("@grammyjs/menu");
+const { Menu, MenuRange } = require("@grammyjs/menu");
 const { getFormattedCharacters } = require("../utils");
 const { playersID } = require("../constants/characters");
 
@@ -9,6 +9,7 @@ const P = [
   new Set(), // Cubo/                [3]
   new Set(), // Todos                [4]
 ];
+var idStatus = [];
 function deleteP(excp) {
   P.forEach((conjunto, i) => {
     if (excp !== i) conjunto.clear();
@@ -18,7 +19,6 @@ function deleteP(excp) {
 function toggleP(id, excp) {
   if (!P[excp].delete(id)) P[excp].add(id);
 }
-
 
 const listItemsMenu = new Menu("list-items-menu")
   .text(
@@ -217,8 +217,66 @@ const equipItemMenu = new Menu("equip-item-menu")
 
 const DgMMenu = new Menu("Dungeon-Master-menu")
   .submenu("Listar itens dos players", "list-itens-players", (ctx) => {
-  ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-});
+    ctx.editMessageText("Escolha de que personagem deseja ver os itens.");}
+    )
+  .submenu("Alterar status dos players", "players", (ctx) => {
+    ctx.editMessageText("Escolha qual personagem quer alterar o status.");
+}); 
+
+function statusReset(){
+   for (let i = 0; i < statusValue.length; i++) {
+   for (let j = 0; j < statusValue[i].length; j++) {
+    statusValue[i][j] = 0;
+  }
+}
+  idStatus = [];
+}
+
+const playerss = new Menu("players")
+  .text(
+    (ctx) => (P[0].has("Abbadon") ? "✅ Abbadon" : "Abbadon"),
+    async (ctx) => {
+    toggleP("Abbadon", 0);
+    ctx.menu.update();
+    
+  }).text(
+    (ctx) => (P[0].has("Fergus") ? "✅ Fergus" : "Fergus"),
+    async (ctx) => {
+    toggleP("Fergus", 0);
+    ctx.menu.update();
+    
+    })
+    .text(
+    (ctx) => (P[0].has("Tibius") ? "✅ Tibius" : "Tibius"),
+    async (ctx) => {
+    toggleP("Tibius", 0);
+    ctx.menu.update();
+    
+  })
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Seja bem vindo Dungeon Master!");
+  }).submenu(
+    (ctx) => (P[0].size !== 0 ? "ok" : ""), "dynamic", ctx =>{
+    idStatus = Array.from(P[0]);
+    ctx.editMessageText(`Você está agora editando os status de ${idStatus[0]}`)
+  });
+
+// const playerss = new Menu("players")
+//   .text("Abbadon", "dynamic", (ctx) => {
+//     idStatus[0] = playersID.Abbadon;
+//     ctx.editMessageText("Defina os valores");
+//   }).submenu("Fergus", "dynamic", (ctx) => {
+//     idStatus[0] = playersID.Fergus;
+//     ctx.editMessageText("Defina os valores");
+//   }).submenu("Tibius", "dynamic", (ctx) => {
+//     idStatus[0] = playersID.Tibius;
+//     ctx.editMessageText("Defina os valores");
+//   })
+//   .back("⏪ Voltar", async (ctx) => {
+//     await statusReset();
+//     ctx.editMessageText("Seja bem vindo Dungeon Master!");
+//   });
 
 const listPlayersMenu = new Menu("list-itens-players")
   .text(
@@ -292,6 +350,70 @@ const listPlayersMenu = new Menu("list-itens-players")
       }
     }
   );
+var statusName = ["PV","PF","PM"];
+var statusValue = [[0,0 ,0],[0,0 ,0],[0,0 ,0]];
+var n = 0;
+
+const changeStatus = new Menu("dynamic")
+  .dynamic(() => {
+    // Generate a part of the menu dynamically!
+    const range = new MenuRange();
+    
+    for(let i = 0; i<3 ;i++){
+      range
+        .text(`${statusName[i]} = ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
+        .text("-3", (ctx) => {
+        statusValue[n][i]-=3;
+        ctx.menu.update();
+        })
+        .text("-", (ctx) => {
+        statusValue[n][i]-=1;
+        ctx.menu.update();
+        })
+        .text("+", (ctx) => {
+        statusValue[n][i]+=1;
+        ctx.menu.update();
+        })
+        .text("+3", (ctx) => {
+        statusValue[n][i]+=3;
+        ctx.menu.update();
+        }).row()
+    }
+    console.log(statusValue);
+    return range;
+  })
+  .back("⏪ Voltar", async (ctx) => {
+    await deleteP(9);
+    await statusReset();
+    ctx.editMessageText("Escolha qual personagem quer alterar");
+  })
+  .text(
+    (ctx) => (statusValue[n].every(elemento => elemento === 0) !== true ? "✅" : "")
+    ,  async (ctx) => {
+    if(P[0].size === 3){
+      n+=1;
+      if(n > 2) {
+        await ctx.deleteMessage();
+        await ctx.conversation.enter("status");
+      }else{
+      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}`);
+      }
+    }else if(P[0].size === 2){
+      n+=1;
+      if(n > 1) {
+        await ctx.deleteMessage();
+        await ctx.conversation.enter("status");
+      }else{
+      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}`);
+      }
+      }else if(P[0].size === 1){
+        console.log(idStatus);
+        await ctx.deleteMessage();
+        await ctx.conversation.enter("status");
+    }
+  })
+  .text("❎", (ctx) => ctx.deleteMessage());
+
 
 module.exports = {
   P,
@@ -306,5 +428,10 @@ module.exports = {
   listItemsMenu,
   equipItemMenu,
   cubeMenu,
-  inventoryMenu
+  inventoryMenu,
+  changeStatus,
+  playerss,
+  statusReset,
+  statusValue,
+  idStatus,
 };

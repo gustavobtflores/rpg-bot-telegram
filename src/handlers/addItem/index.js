@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString } = require('../../handlers');
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString} = require('../../handlers');
 
 const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
 
@@ -28,7 +28,7 @@ async function addItem(conversation, ctx, cube) {
   }
 
   await ctx.reply(
-    "Escreva o item que quer adiconar seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena"
+    `Escreva o item que quer adiconar seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena`
   );
 
   const { message } = await conversation.wait();
