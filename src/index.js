@@ -43,7 +43,6 @@ bot.command("start", async (ctx) => {
     await statusReset();
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
    } else {
-    console.log(statusName);
     await ctx.reply("Bem vindo ao bot de itens! Que inventário quer usar?", { reply_markup: mainMenu });
   }
 });
@@ -68,7 +67,7 @@ bot.command("equip", async (ctx) => {
 
  bot.command("regras", async (ctx) => {
   await ctx.reply("Regras!", { reply_markup: { inline_keyboard: [[{text: "📖", url: weblink }]] } });
-  ctx.api.deleteMessage(ctx.update.message.chat.id, ctx.update.message.message_id);
+  // ctx.api.deleteMessage(ctx.update.message.chat.id, ctx.update.message.message_id);
 });
 
 // bot.command("broadcast", async (ctx) => {

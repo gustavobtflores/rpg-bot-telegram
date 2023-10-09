@@ -13,9 +13,11 @@ const getFormattedCharacters = async (ID, equipped, fun) => {
   // CHARACTERS1.forEach(character => {
   //     character.status = { ...statusObjet};
   // });
-  console.log(CHARACTERS1);
   
-  deleteItem("characters", CHARACTERS1);
+  // deleteItem
+  // console.log(CHARACTERS1);
+  
+  // deleteItem("characters", CHARACTERS);
   
   const formatCharacter = (character) => {
     if(fun !== "allItems"){
