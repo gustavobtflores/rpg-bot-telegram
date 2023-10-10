@@ -55,6 +55,7 @@ function parseItemFromInventoryString(itemString) {
   };
 }
 
+
 module.exports = {
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
@@ -64,5 +65,5 @@ module.exports = {
   statusValue,
   idStatus,
   playersID,
-  P
+  P,
 };

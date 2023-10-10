@@ -1,6 +1,28 @@
 const { Menu, MenuRange } = require("@grammyjs/menu");
 const { getFormattedCharacters } = require("../utils");
 const { playersID } = require("../constants/characters");
+const { deleteItem, catchItem } = require("../config/storage");
+
+async function recoverPvPf(idStats){
+  
+  const CHARS = await catchItem("characters");
+
+  await idStats.forEach((value, i) => {
+      const char = CHARS.find(id => id.name === value);
+      if(!P[4].has("mana")){  
+        char.status.pvAtual = char.status.pvMax;
+        char.status.pfAtual = char.status.pfMax;
+        char.status.log.push("Recuperação total PV e PF");
+      }else{
+        char.status.pmAtual = (char.status.pmAtual - 8) < 0 ? 0 : char.status.pmAtual - 8;
+        char.status.log.push("Novo raiar do dia +8 PM");
+      }
+      if(char.status.log.length > 5){
+          char.status.log.shift();
+      }
+  });
+  await deleteItem("characters", CHARS);
+}
 
 const P = [
   new Set(), // Abbadon/Equipados'   [0]
@@ -84,7 +106,19 @@ const mainMenu = new Menu("main-menu")
   })
   .submenu("Cubo", "cube-menu", async (ctx) => {
     ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
-  });
+  }).row()
+  .text(
+    (ctx) => (ctx.from && P[0].has("status") ?"❌ Status" : "⭕ Status"),
+    async (ctx) => {
+      deleteP(0);
+      toggleP("status", 0);
+
+      if (P[0].has("status")) {
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "status")}ˆˆEstes são os seus status por enquantoˆˆ`);
+      } else {
+        ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+      }
+    });
   
   
 const inventoryMenu = new Menu("inventory-menu")
@@ -95,7 +129,7 @@ const inventoryMenu = new Menu("inventory-menu")
       toggleP("equipped", 0);
 
       if (P[0].has("equipped")) {
-        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true)}ˆˆEstes são os itens equipadosˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true,)}ˆˆEstes são os itens equipadosˆˆ`);
       } else {
         ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
       }
@@ -219,8 +253,8 @@ const DgMMenu = new Menu("Dungeon-Master-menu")
   .submenu("Listar itens dos players", "list-itens-players", (ctx) => {
     ctx.editMessageText("Escolha de que personagem deseja ver os itens.");}
     )
-  .submenu("Alterar status dos players", "players", (ctx) => {
-    ctx.editMessageText("Escolha qual personagem quer alterar o status.");
+  .submenu("Alterar status dos players", "players", async (ctx) => {
+    await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false, "status")}\n\nˆˆEstes são os status dos personagens atualmenteˆˆ\n\nSelecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.`);
 }); 
 
 function statusReset(){
@@ -233,50 +267,63 @@ function statusReset(){
 }
 
 const playerss = new Menu("players")
+  .submenu((ctx) => (P[0].size !== 0 ? "Recuperar totalmente PV e PF dos selecionados" : ""), 'full-recover-all',(ctx) => {
+    idStatus = Array.from(P[0]);
+    ctx.editMessageText(`O PV e PF dos personagens ${idStatus.map(value => value).join(", ")} serão recuperados totalmente, confirma?`);
+  })
+  .row()
+  .submenu("Recuperar totalmente PV e PF de todos", "full-recover-all", (ctx) => {
+  idStatus = ["Tibius", "Abbadon", "Fergus"];
+    ctx.editMessageText("O PV e PF de todos os personagens serão recuperados totalmente, confirma?");
+  })
+  .row()
+  .submenu("Recuperar Mana Pool (8)", "full-recover-all", (ctx) => {
+    idStatus = ["Tibius", "Abbadon", "Fergus"];
+    toggleP("mana", 4);
+    ctx.editMessageText("O Mana Pool (8) de todos os personagens serão recuperados, confirma?");
+  })
+  .row()
   .text(
     (ctx) => (P[0].has("Abbadon") ? "✅ Abbadon" : "Abbadon"),
     async (ctx) => {
     toggleP("Abbadon", 0);
     ctx.menu.update();
     
-  }).text(
+  })
+  .text(
     (ctx) => (P[0].has("Fergus") ? "✅ Fergus" : "Fergus"),
     async (ctx) => {
     toggleP("Fergus", 0);
     ctx.menu.update();
-    
-    })
-    .text(
+  })
+  .text(
     (ctx) => (P[0].has("Tibius") ? "✅ Tibius" : "Tibius"),
     async (ctx) => {
     toggleP("Tibius", 0);
     ctx.menu.update();
-    
   })
+  .row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
     ctx.editMessageText("Seja bem vindo Dungeon Master!");
   }).submenu(
-    (ctx) => (P[0].size !== 0 ? "ok" : ""), "dynamic", ctx =>{
+    (ctx) => (P[0].size !== 0 ? "Confirmar" : ""), "dynamic", async ctx =>{
     idStatus = Array.from(P[0]);
-    ctx.editMessageText(`Você está agora editando os status de ${idStatus[0]}`)
+    const CHARS2 = await catchItem("characters");
+    const char2 = CHARS2.find(value => value.name === idStatus[0]);
+    ctx.editMessageText(`Você está agora editando os status de ${idStatus[0]}\n\n${await getFormattedCharacters(char2.id,true,"status")}`)
   });
-
-// const playerss = new Menu("players")
-//   .text("Abbadon", "dynamic", (ctx) => {
-//     idStatus[0] = playersID.Abbadon;
-//     ctx.editMessageText("Defina os valores");
-//   }).submenu("Fergus", "dynamic", (ctx) => {
-//     idStatus[0] = playersID.Fergus;
-//     ctx.editMessageText("Defina os valores");
-//   }).submenu("Tibius", "dynamic", (ctx) => {
-//     idStatus[0] = playersID.Tibius;
-//     ctx.editMessageText("Defina os valores");
-//   })
-//   .back("⏪ Voltar", async (ctx) => {
-//     await statusReset();
-//     ctx.editMessageText("Seja bem vindo Dungeon Master!");
-//   });
+  
+const fullRecoverAll = new Menu("full-recover-all")
+  .text("Sim", async (ctx) => {
+  await recoverPvPf(idStatus);
+  idStatus = [];
+  await ctx.deleteMessage();
+  })
+  .back("Não", async (ctx) =>{
+    deleteP(9);
+    ctx.editMessageText("Selecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.");
+    });
 
 const listPlayersMenu = new Menu("list-itens-players")
   .text(
@@ -355,13 +402,13 @@ var statusValue = [[0,0 ,0],[0,0 ,0],[0,0 ,0]];
 var n = 0;
 
 const changeStatus = new Menu("dynamic")
-  .dynamic(() => {
+  .dynamic(async () => {
     // Generate a part of the menu dynamically!
     const range = new MenuRange();
     
-    for(let i = 0; i<3 ;i++){
+    for(let i = 0; i<statusName.length ;i++){
       range
-        .text(`${statusName[i]} = ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
+        .text(`${statusName[i] === "PM" ? `${statusValue[n][2] < 0 ? `❗PM`: `PM` }` : statusName[i]}: ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
         .text("-3", (ctx) => {
         statusValue[n][i]-=3;
         ctx.menu.update();
@@ -385,34 +432,38 @@ const changeStatus = new Menu("dynamic")
   .back("⏪ Voltar", async (ctx) => {
     await deleteP(9);
     await statusReset();
-    ctx.editMessageText("Escolha qual personagem quer alterar");
+    ctx.editMessageText("Selecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.");
   })
+  .text("❎", (ctx) => ctx.deleteMessage())
   .text(
-    (ctx) => (statusValue[n].every(elemento => elemento === 0) !== true ? "✅" : "")
+    (ctx) => (statusValue[n].every(elemento => elemento === 0) !== true && statusValue[n][2] >= 0 ? "✅" : "")
     ,  async (ctx) => {
+      
+    const CHARS1 = await catchItem("characters");
     if(P[0].size === 3){
       n+=1;
+      const char1 = CHARS1.find(item => item.name === idStatus[n]);
       if(n > 2) {
         await ctx.deleteMessage();
         await ctx.conversation.enter("status");
       }else{
-      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}`);
+      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}\n\n${await getFormattedCharacters(char1.id,true,"status")}`);
       }
     }else if(P[0].size === 2){
       n+=1;
+      const char1 = CHARS1.find(item => item.name === idStatus[n]);
       if(n > 1) {
         await ctx.deleteMessage();
         await ctx.conversation.enter("status");
       }else{
-      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}`);
+      ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}\n\n${await getFormattedCharacters(char1.id,true,"status")}`);
       }
       }else if(P[0].size === 1){
         console.log(idStatus);
         await ctx.deleteMessage();
         await ctx.conversation.enter("status");
     }
-  })
-  .text("❎", (ctx) => ctx.deleteMessage());
+  });
 
 
 module.exports = {
@@ -434,4 +485,5 @@ module.exports = {
   statusReset,
   statusValue,
   idStatus,
+  fullRecoverAll
 };
