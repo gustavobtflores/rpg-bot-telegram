@@ -39,13 +39,13 @@ const getFormattedCharacters = async (ID, equipped, fun) => {
     if(fun === "status"){
       //  aqui equipped === true indica que é apenas para o personagem, se for false é pro mestre
       if(!equipped && character.id !== playersID.Mestre && character.id !== playersID.Rowan && character.id !== playersID.Cubo){
-        var stats = `${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual} | PF (${character.status.pfMax}) = ${character.status.pfAtual} | PM (${character.status.pmMax}) = ${character.status.pmAtual}\nUltimos acontecimentos:\n\n${character.status.log.map(log => `-> ${log};`
+        var stats = `${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nUltimos acontecimentos:\n\n${character.status.log.map(log => `-> ${log};`
         ).join("\n")}`
         
       return `${stats}\n\n`;
       
       }else if(character.id === authorId){
-        var stats = `PV (${character.status.pvMax}) = ${character.status.pvAtual} | PF (${character.status.pfMax}) = ${character.status.pfAtual} | PM (${character.status.pmMax}) = ${character.status.pmAtual}\n\nUltimos acontecimentos:\n\n${character.status.log.map(log => `-> ${log};`
+        var stats = `PV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\n\nUltimos acontecimentos:\n\n${character.status.log.map(log => `-> ${log};`
         ).join("\n")}`
         
       return `${stats}\n\n`;

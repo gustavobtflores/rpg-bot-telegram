@@ -307,7 +307,7 @@ const playerss = new Menu("players")
     deleteP(9);
     ctx.editMessageText("Seja bem vindo Dungeon Master!");
   }).submenu(
-    (ctx) => (P[0].size !== 0 ? "Confirmar" : ""), "dynamic", async ctx =>{
+    (ctx) => (P[0].size !== 0 ? "Confirmar ✅" : ""), "dynamic", async ctx =>{
     idStatus = Array.from(P[0]);
     const CHARS2 = await catchItem("characters");
     const char2 = CHARS2.find(value => value.name === idStatus[0]);
@@ -426,7 +426,6 @@ const changeStatus = new Menu("dynamic")
         ctx.menu.update();
         }).row()
     }
-    console.log(statusValue);
     return range;
   })
   .back("⏪ Voltar", async (ctx) => {
@@ -459,7 +458,6 @@ const changeStatus = new Menu("dynamic")
       ctx.editMessageText(`Você está agora editando os status de ${idStatus[n]}\n\n${await getFormattedCharacters(char1.id,true,"status")}`);
       }
       }else if(P[0].size === 1){
-        console.log(idStatus);
         await ctx.deleteMessage();
         await ctx.conversation.enter("status");
     }

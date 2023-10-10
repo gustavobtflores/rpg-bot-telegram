@@ -64,8 +64,9 @@ async function status(conversation, ctx){
   return `${value}\n\n${textoFinal}`;
 }).join("\n\n")}\n\nConfirma?`, { reply_markup: confirmStatus});
 
-  console.log(desc);
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
+  
+  const chatID = message.chat.id;
   
   if(res.match === "yes"){
     await conversation.external(async () => {
@@ -84,8 +85,12 @@ async function status(conversation, ctx){
       });
       await deleteItem("characters", CHARACTERS);
     });
+    
+    ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
     await ctx.reply("Status do(s) personagem(ns) atualizados com sucesso!");
   }else{
+    
+    ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
     await ctx.reply("Ok! /start se quiser tentar novamente!");
   }
 }
