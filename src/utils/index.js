@@ -4,6 +4,8 @@ const { playersID, CHARACTERS } = require("../constants/characters");
 const getFormattedCharacters = async (ID, equipped, fun) => {
   const CHARACTERS1 = await catchItem("characters");
   const authorId = String(ID);
+  
+  
   // const statusObjet = {
   //   pvMax: 0,
   //   pfMax: 0,
