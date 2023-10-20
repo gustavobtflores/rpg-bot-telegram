@@ -3,6 +3,10 @@ const { getFormattedCharacters } = require("../utils");
 const { playersID } = require("../constants/characters");
 const { deleteItem, catchItem } = require("../config/storage");
 
+
+const menuHelp = new Menu("menu-help")
+  .text("❎", (ctx) => ctx.deleteMessage());
+
 async function recoverPvPf(idStats){
   
   const CHARS = await catchItem("characters");
@@ -74,7 +78,7 @@ const listItemsMenu = new Menu("list-items-menu")
       toggleP("cube", 2);
 
       if (P[2].has("cube")) {
-        ctx.editMessageText(`${await getFormattedCharacters("cube", true, "allItems")}ˆ˜Estes são os no cuboˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters("cube", true)}ˆˆEstes são os itens no cuboˆˆ`);
       } else {
         ctx.editMessageText("Você escolheu listar seus itens! Escolha de onde");
       }
@@ -86,23 +90,29 @@ const listItemsMenu = new Menu("list-items-menu")
   
 
 const itemAddMenu = new Menu("item-add-menu")
-  .text("Meu inventário", async (ctx) => {
+  .text("Itens", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-item");
+  })
+  .text("Compartimentos", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("add-pockets");
+  }).row()
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("Inventário do cubo", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-cube");
-  })
-  .row()
-  .back("⏪ Voltar", async (ctx) => {
-    deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
 
 const mainMenu = new Menu("main-menu")
-  .submenu("Principal", "inventory-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
+  .submenu("Itens", "inventory-menu", async (ctx) => {
+    ctx.editMessageText("Você escolheu o inventário itens! Escolha o que quer fazer");
+  })
+  .submenu("Compartimentos", "pockets-menu", async (ctx) =>{
+    ctx.editMessageText("Você escolheu o inventário de compartimentos! Escolha o que quer fazer")
   })
   .submenu("Cubo", "cube-menu", async (ctx) => {
     ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
@@ -129,9 +139,9 @@ const inventoryMenu = new Menu("inventory-menu")
       toggleP("equipped", 0);
 
       if (P[0].has("equipped")) {
-        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true,)}ˆˆEstes são os itens equipadosˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true)}ˆˆEstes são os itens equipadosˆˆ`);
       } else {
-        ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
+        ctx.editMessageText("Você escolheu o inventário de itens! Escolha o que quer fazer");
       }
     })
   .text(
@@ -143,33 +153,80 @@ const inventoryMenu = new Menu("inventory-menu")
       if (P[1].has("unequipped")) {
         ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false)}ˆˆEstes são os itens desequipadosˆˆ`);
       } else {
-        ctx.editMessageText("Você escolheu o inventário principal! Escolha o que quer fazer");
+        ctx.editMessageText("Você escolheu o inventário de itens! Escolha o que quer fazer");
       }
     })
   .row()
-  .text("Adicionar itens", async (ctx) => {
+  .text("Adicionar", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-item");
   })
-  .text("Remover itens", async (ctx) => {
+  .text("Remover", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-item");
   })
-  .text("Modificar itens", async (ctx) => {
+  .text("Modificar", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-item");
+  }).row()
+  .back("⏪", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+  })
+  .text("Transferir", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("transfer-item");
+  });
+  
+const pocketsMenu = new Menu("pockets-menu")
+  .text(
+    (ctx) => (ctx.from && P[0].has("equipped") ?"❌ Listar equipados" : "⭕ Listar equipados"),
+    async (ctx) => {
+      deleteP(0);
+      toggleP("equipped", 0);
+
+      if (P[0].has("equipped")) {
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "pockets", true)}ˆˆEstes são os compartimentos equipadosˆˆ`);
+      } else {
+        ctx.editMessageText("Você escolheu o inventário de compartimentos! Escolha o que quer fazer");
+      }
+    })
+  .text(
+    (ctx) => (ctx.from && P[1].has("unequipped") ? "❌ Listar desequipados" : "⭕ Listar desequipados"),
+    async (ctx) => {
+      deleteP(1);
+      toggleP("unequipped", 1);
+
+      if (P[1].has("unequipped")) {
+        ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false, "pockets",true)}ˆˆEstes são os compartimentos desequipadosˆˆ`);
+      } else {
+        ctx.editMessageText("Você escolheu o inventário de compartimentos! Escolha o que quer fazer");
+      }
+    })
+  .row()
+  .text("Adicionar", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("add-pockets");
+  })
+  .text("Remover", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("remove-pockets");
+  })
+  .text("Modificar", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("modify-pockets");
   }).row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
-  .text("Equipar itens", async (ctx) => {
+  .text("Equipar", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
-    await ctx.conversation.enter("equip-item");
+    await ctx.conversation.enter("equip-pockets");
   })
-  .text("Desequipar itens", async (ctx) => {
+  .text("Desequipar", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
-    await ctx.conversation.enter("unequip-item");
+    await ctx.conversation.enter("unequip-pockets");
   });
   
   
@@ -185,7 +242,7 @@ const cubeMenu = new Menu("cube-menu")
       toggleP("cube", 2);
 
       if (P[2].has("cube")) {
-        ctx.editMessageText(`${await getFormattedCharacters("cube", true, "allItems")}ˆ˜Estes são os no cuboˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters("cube", true)}ˆ˜Estes são os no cuboˆˆ`);
       } else {
         ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
       }
@@ -205,43 +262,50 @@ const cubeMenu = new Menu("cube-menu")
   });
 
 const itemModifyMenu = new Menu("item-modify-menu")
-  .text("Meu inventário", async (ctx) => {
+  .text("Itens", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-item");
+  })
+  .text("Compartimentos", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("modify-pockets");
+  })
+  .row()
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("Inventário do cubo", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-cube");
-  })
-  .row()
-  .back("⏪ Voltar", async (ctx) => {
-    deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
 
 const itemRemoveMenu = new Menu("item-remove-menu")
-  .text("Meu inventário", async (ctx) => {
+  .text("Itens", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-item");
+  })
+  .text("Compartimentos", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("remove-pockets");
+  }).row()
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("Inventário do cubo", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-cube");
-  })
-  .row()
-  .back("⏪ Voltar", async (ctx) => {
-    deleteP(9);
-    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   });
   
-const equipItemMenu = new Menu("equip-item-menu")
-  .text("Equipar item", async (ctx) => {
+const equipPocketMenu = new Menu("equip-pocket-menu")
+  .text("Equipar compartimento", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
-    await ctx.conversation.enter("equip-item");
+    await ctx.conversation.enter("equip-pockets");
   })
-  .text("Desequipar item", async (ctx) => {
+  .text("Desequipar compartimento", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
-    await ctx.conversation.enter("unequip-item");
+    await ctx.conversation.enter("unequip-pockets");
   })
   .row()
   .back("⏪ Voltar", async (ctx) => {
@@ -475,7 +539,7 @@ module.exports = {
   DgMMenu,
   itemModifyMenu,
   listItemsMenu,
-  equipItemMenu,
+  equipPocketMenu,
   cubeMenu,
   inventoryMenu,
   changeStatus,
@@ -483,5 +547,7 @@ module.exports = {
   statusReset,
   statusValue,
   idStatus,
-  fullRecoverAll
+  fullRecoverAll,
+  pocketsMenu,
+  menuHelp
 };

@@ -1,42 +1,29 @@
 const { catchItem, deleteItem } = require("../config/storage");
 const { playersID, CHARACTERS } = require("../constants/characters");
 
-const getFormattedCharacters = async (ID, equipped, fun) => {
+
+const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   const CHARACTERS1 = await catchItem("characters");
   const authorId = String(ID);
+  let totalWeightAllPockets;
   
-  
-  // const statusObjet = {
-  //   pvMax: 0,
-  //   pfMax: 0,
-  //   pmMax: 0,
-  //   pvAtual: 0,
-  //   pfAtual: 0,
-  //   pmAtual: 0,
-  //   log: []
-  // }
-  // CHARACTERS1.forEach(character => {
-  //     character.status = { ...statusObjet};
-  // });
-  // console.log(CHARACTERS1);
-  
-  // CHARACTERS1[1].status.pvMax = 9;
-  // CHARACTERS1[1].status.pfMax = 9;
-  // CHARACTERS1[1].status.pmMax = 35;
-  
-  // CHARACTERS1[2].status.pvMax = 17;
-  // CHARACTERS1[2].status.pfMax = 14;
-  // CHARACTERS1[2].status.pmMax = 0;
-  
-  // CHARACTERS1[3].status.pvMax = 18;
-  // CHARACTERS1[3].status.pfMax = 10;
-  // CHARACTERS1[3].status.pmMax = 25;
-  // console.log(CHARACTERS1);
-  
-  // deleteItem("characters", CHARACTERS1);
+  CHARACTERS1.map(value =>{
+    if(value.id !== "cube"){
+    value.items.map(item =>{
+      item.pocket = item.equipped === true ? "Corpo": "Chão";
+    });
+    value.pockets = [{name:"Corpo", equipped: true}, {name:"Chão", equipped: false}];
+    }else{
+    value.items.map(item =>{
+      item.pocket = "cubo";
+    });
+    value.pockets = [{name:"cubo", equipped: true}];
+    }
+  });
+  deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
-    if(fun === "status"){
+      if(fun === "status"){
       //  aqui equipped === true indica que é apenas para o personagem, se for false é pro mestre
       if(!equipped && character.id !== playersID.Mestre && character.id !== playersID.Rowan && character.id !== playersID.Cubo){
         var stats = `${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nUltimos acontecimentos:\n\n${character.status.log.map(log => `-> ${log};`
@@ -51,27 +38,82 @@ const getFormattedCharacters = async (ID, equipped, fun) => {
       return `${stats}\n\n`;
       }
     }else{
-    if(fun !== "allItems"){
-      var equippedItems = equipped === true ? character.items.filter(item => item.equipped) :  character.items.filter(item => !item.equipped);
-    }else{
+    if(ID === "cube"){
       var equippedItems = character.items;
+    }else{
+      var equippedItems = equipped === true ? character.items.filter(item => item.equipped) :  character.items.filter(item => !item.equipped);
     }
+    var equippedPockets = equipped === true ? character.pockets.filter(item => item.equipped) : character.pockets.filter(item => !item.equipped);
+      
+    totalWeightAllPockets = equippedItems.reduce((acc, item) => Number((acc + item.weight * item.quantity).toFixed(3)), 0);
+    totalWeightMainPockets = equippedItems.reduce((acc, item) => {
+      if(item.pocket !== "Corpo" && item.pocket !== "Chão"){
+      return acc + item.weight * item.quantity;
+      }
+      return acc;
+    }, 0).toFixed(3);
+      const itemsByPocket = equippedItems.reduce((pocketMap, item) => {
+        let pocket = item.pocket;
+
+          if (!pocketMap[pocket]) {
+            pocketMap[pocket] = [];
+          }
+          pocketMap[pocket].push(item);
+        return pocketMap;
+      }, {});
+      
     
-    const totalWeight = equippedItems.reduce((acc, item) => Number((acc + item.weight * item.quantity).toFixed(3)), 0);
-
     if (fun === "all" && character.id !== playersID.Mestre && character.id !== playersID.Rowan) {
-      return `${character.name}\n\nPeso total: ${totalWeight}Kg\n---------------------\n`;
+      const pocketsInfo = Object.keys(itemsByPocket).map(pocket => {
+        const totalWeight = itemsByPocket[pocket].reduce((acc, item) => Number((acc + item.weight * item.quantity).toFixed(3)), 0);
+      return `Peso em ${pocket}: ${totalWeight}kg`;
+      }).join("\n\n");
+      
+      return `${character.name}${character.id !== "cube" ? `\n\n${pocketsInfo}` : ``}` + `\n\n-> Peso total: ${totalWeightAllPockets}Kg <-\n\n---------------------\n`;
     } else if (authorId === character.id) {
-      const itemList = equippedItems
-        .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${Number((item.weight * item.quantity).toFixed(3))}Kg\nDescrição: ${item.desc}`)
-        .join("\n\n");
+      let pocketsInfo;
+      if (fun === "pockets"){
+        pocketsInfo = equippedPockets.map(pocket => {
+          
+          let totalWeight;
+          try{
+            totalWeight = itemsByPocket[pocket.name].reduce((acc, item) => Number((acc + item.weight * item.quantity).toFixed(3)), 0);
+          }catch (error){
+            totalWeight = false;
+          }
+          
+        if(allPockets === true){
+        return ` -> ${pocket.name} - ${totalWeight !== false ? `${totalWeight}Kg`: "Vazio"}\n`;
+      }else if(pocket.name !== "Chão" && pocket.name !== "Corpo"){
+        return ` -> ${pocket.name} - ${totalWeight !== false ? `${totalWeight}Kg`: "Vazio"}\n`;
+      }
+      });
+      pocketsInfo.push(`Estes compartimentos estão ${equipped === true ? "equipados":"desequipados"} e o peso de todos juntos é ${allPockets === true ? totalWeightAllPockets : totalWeightMainPockets}Kg.\n\n`);
+      
+      }else{
+        pocketsInfo = Object.keys(itemsByPocket).map(pocket => {
+        const totalWeight = itemsByPocket[pocket].reduce((acc, item) => Number((acc + item.weight * item.quantity).toFixed(3)), 0);
+        const itemList = itemsByPocket[pocket]
+          .map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${Number((item.weight * item.quantity).toFixed(3))}Kg\nDescrição: ${item.desc}`)
+          .join("\n\n");
 
-      return `Lista de itens: \n\n${itemList}\n\nPeso total: ${totalWeight}Kg\n---------------------\n`;
+        return `Itens em "${pocket}" (${totalWeight}Kg):\n\n${itemList}\n\n---------------------\n`;
+      });
+      
+      pocketsInfo.push(`Peso total: ${totalWeightAllPockets}Kg\n\n`);
+        
+      }
+      
+      return pocketsInfo.join("\n");
+      
     }}
+    
   };
 
   return CHARACTERS1.map(formatCharacter).filter(Boolean).join("\n").replace(/^\t+/gm, "");
+
 };
+
 
 module.exports = {
   getFormattedCharacters,

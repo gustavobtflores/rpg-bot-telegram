@@ -4,6 +4,9 @@ const { addCube, removeCube, modifyCube } = require("./cube");
 const { modifyItem } = require("./modifyItem");
 const { equipItem, unequipItem } = require("./equipItem");
 const { status } = require("./status");
+const { addPockets, removePockets, modifyPockets } = require("./pockets/managePockets");
+const { equipPockets, unequipPockets } = require("./pockets/equipPockets");
+const { transferItem } = require("./pockets/manageItems");
 
 
 module.exports = {
@@ -15,5 +18,11 @@ module.exports = {
   modifyCube,
   equipItem,
   unequipItem,
-  status
+  status,
+  addPockets,
+  removePockets,
+  equipPockets,
+  unequipPockets,
+  modifyPockets,
+  transferItem
 }

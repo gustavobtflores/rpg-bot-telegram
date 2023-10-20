@@ -1,5 +1,6 @@
 const { CHARACTERS, playersID } = require("../constants/characters");
 const { statusValue, idStatus, P} = require("../menus");
+const { InlineKeyboard } = require("grammy");
 
 function handleChatTypeResponse(chatID, ctx) {
   var pass = false;
@@ -43,16 +44,76 @@ function limitarCasasDecimais(numero, casasDecimais) {
 }
 
 
-function parseItemFromInventoryString(itemString) {
-  const itemSplit = itemString.split(",");
-  const itemParts = [...itemSplit.slice(0, 3), itemSplit.slice(3).join(',')];
-
+function parseItemFromInventoryString(itemString, pockets) {
+  const itemSplit = itemString.split(",").map((item) => item.trim());
+  const itemParts = [...itemSplit.slice(0, 3), itemSplit.slice(3).join(', ')];
+  
+  if(pockets !== true){
   return {
     name: itemParts[0].trim(),
     weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
     quantity: parseFloat(itemParts[2], 10),
     desc: itemParts[3].trim(),
-  };
+  };}else{
+  let equippedPocket;
+  if(itemParts[1].toLowerCase() === "equipado" || itemParts[1].toLowerCase() === "equipada"){
+    equippedPocket = true;
+  }else{
+    equippedPocket = false;
+  }
+  return{
+    name: itemParts[0].trim(),
+    equipped: equippedPocket,
+  };}
+}
+
+
+function splitPocketQuant(item) {
+  var itemQuant = [];
+  var itemString = [];
+  for (let pocket of item) {
+    if (pocket !==""){
+    itemQuant.push([pocket, pocket]);
+    itemString.push(pocket);
+  }}
+
+  var buttonRow = itemQuant.map(([label, data]) => InlineKeyboard.text(label, data));
+
+  const tamanhoDoGrupo = calcularValorDeX(itemString.length);
+  const arrayDividida = [];
+
+  for (let i = 0; i < buttonRow.length; i += tamanhoDoGrupo) {
+    const grupo = buttonRow.slice(i, i + tamanhoDoGrupo);
+    arrayDividida.push(grupo);
+  }
+  const InlineNumbers = InlineKeyboard.from(arrayDividida);
+
+  return { InlineNumbers, itemString };
+}
+
+function calcularValorDeX(tamanhoArray) {
+  switch (true) {
+    case tamanhoArray >= 4 && tamanhoArray <= 7:
+      return tamanhoArray % 2 === 0 ? 4 : 3;
+    case tamanhoArray >= 8 && tamanhoArray <= 14:
+      return tamanhoArray % 2 === 0 ? 3 : 4;
+    default:
+      return 4;
+  }
+}
+
+function extractItemsFromPockets(objectItems){
+  
+  const pinto =objectItems.reduce((pocketMap, item) => {
+    let pocket = item.pocket;
+
+      if (!pocketMap[pocket]) {
+        pocketMap[pocket] = [];
+      }
+      pocketMap[pocket].push(item);
+    return pocketMap;
+  }, {});
+   return pinto;
 }
 
 
@@ -66,4 +127,6 @@ module.exports = {
   idStatus,
   playersID,
   P,
+  splitPocketQuant,
+  extractItemsFromPockets
 };

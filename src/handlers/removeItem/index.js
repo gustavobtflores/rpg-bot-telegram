@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais } = require("../../handlers");
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
@@ -7,14 +7,16 @@ async function removeItem(conversation, ctx, cube) {
   const enter = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
   let ID = "";
   let tempCube = cube;
+  let equipped;
   if (cube === true) {
     ID = "cube";
     tempCube = cube;
+    equipped = true;
   } else {
     ID = ctx.update.callback_query.from.id;
     tempCube = false;
   }
-
+  
   const CHARACTERS = await catchItem("characters");
   const blank = new InlineKeyboard();
   const flagRemove = false;
@@ -26,7 +28,24 @@ async function removeItem(conversation, ctx, cube) {
   if (!handleChatTypeResponse(authorId, ctx)) {
     return;
   }
-  ctx.reply(`Estes são seus itens no momento:\n\n${await getFormattedCharacters(authorId,true, "allItems")}\nEscolha quais itens quer remover separando-os por , ou enter.`, { reply_markup: blank });
+  
+  const confirmPocket = new InlineKeyboard().text("Equipados", "equipped").text("Desequipados", "unequipped");
+  
+  if(!tempCube){
+    
+  await ctx.reply("Escolha que tipo de compartimentos quer remover", {reply_markup: confirmPocket});
+  
+  var res = await conversation.waitForCallbackQuery(["equipped", "unequipped"]);
+
+  equipped = res.match === "equipped" ? true : false;
+  
+  await ctx.editMessageText(`Estes são seus itens no momento:\n\n${await getFormattedCharacters(authorId, equipped)}\nEscolha quais itens quer remover separando-os por , ou enter.`, { reply_markup: blank,  message_id: res.update.callback_query.message.message_id});
+  
+  }else{
+  
+  
+  await ctx.reply(`Estes são seus itens no momento:\n\n${await getFormattedCharacters(authorId, equipped)}\nEscolha quais itens quer remover separando-os por , ou enter.`, { reply_markup: blank });
+  }
 
   const { message } = await conversation.wait();
 
@@ -82,41 +101,6 @@ async function removeItem(conversation, ctx, cube) {
 
     await ctx.editMessageText(`Itens removidos do inventário do ${authorCharacter.name}.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
 
-    //   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
-
-    // console.log(enter, "chegou aqui");
-
-    //   if (res.match === "yes"){
-
-    //     ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-
-    //     await removeItem(conversation, ctx, tempCube);
-
-    //   }else{
-
-    //   await conversation.external(async () =>{
-    //     for(const itemToRemove of listItemRemove){
-
-    //     const index = authorCharacter.items.findIndex((item) => item.name === itemToRemove.name);
-    //     if(index !== -1){
-    //       if(authorCharacter.items[index].quantity !==1 ){
-    //         if(itemToRemove.quantity === authorCharacter.items[index].quantity){
-    //           authorCharacter.items.splice(index,1);
-    //         }else{
-
-    //         authorCharacter.items[index].quantity -= itemToRemove.quantity;
-    //         }
-    //       }else{
-    //       authorCharacter.items.splice(index,1);
-    //       }}
-
-    //     console.log(enter, authorCharacter.items[index]);
-    //   }
-    //   await deleteItem("characters", CHARACTERS);
-    //   });
-
-    //     ctx.editMessageText("Ok, obrigado e até a próxima haha!", {reply_markup: blank, message_id: res.update.callback_query.message.message_id});
-    //   }
   } else {
     await ctx.editMessageText("Ok, então não vou te dar nada.\n\nQuer tentar de novo?", { reply_markup: confirmRemove, message_id: res.update.callback_query.message.message_id });
 
@@ -164,7 +148,7 @@ function splitItemQuant(item) {
 
   var buttonRow = itemQuant.map(([label, data]) => InlineKeyboard.text(label, data));
 
-  const tamanhoDoGrupo = 8;
+  const tamanhoDoGrupo = calcularX(itemString.length);
   const arrayDividida = [];
 
   for (let i = 0; i < buttonRow.length; i += tamanhoDoGrupo) {
@@ -175,7 +159,38 @@ function splitItemQuant(item) {
 
   return { InlineNumbers, itemString };
 }
-
+function calcularX(tamanhoArray) {
+  switch (true) {
+    case tamanhoArray <= 8:
+      return 8;
+    case tamanhoArray <= 10:
+      return 5;
+    case tamanhoArray <= 12:
+      return 6;
+    case tamanhoArray <= 14:
+      return 7;
+    case tamanhoArray <= 16:
+      return 8;
+    case tamanhoArray <= 18:
+      return 6;
+    case tamanhoArray <= 21:
+      return 7;
+    case tamanhoArray <= 24:
+      return 8;
+    case tamanhoArray <= 28:
+      return 7;
+    case tamanhoArray <= 32:
+      return 8;
+    case tamanhoArray <= 35:
+      return 7;
+    case tamanhoArray <= 40:
+      return 8;
+    default:
+      // Se o tamanho for maior do que 40, você pode lidar com isso de acordo com sua lógica.
+      // Aqui, está retornando 8, mas você pode ajustar conforme necessário.
+      return 8;
+  }
+}
 module.exports = {
   removeItem,
 };

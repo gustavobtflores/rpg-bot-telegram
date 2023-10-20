@@ -4,8 +4,6 @@ const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
 
-
-
 async function unequipItem(conversation, ctx){
   const enter = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
   const CHARACTERS = await catchItem("characters");
@@ -51,7 +49,7 @@ async function unequipItem(conversation, ctx){
   }
   
   await ctx.reply(
-    `Confira os itens que quer equipar:\n\n${listItemUnequip
+    `Confira os itens que quer desequipar:\n\n${listItemUnequip
       .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
       .join("\n\n")}\n\nPeso total a ser desequipado: ${listItemUnequip.reduce((acc, item) => limitarCasasDecimais(acc + item.weight * item.quantity, 3), 0)}Kg - Confirma?`,
     { reply_markup: confirmUnequip }
@@ -66,6 +64,7 @@ async function unequipItem(conversation, ctx){
         const index = authorCharacter.items.findIndex((item) => item.name.toLowerCase() === inventoryList[i].toLowerCase());
         if (index !== -1) {
             authorCharacter.items[index].equipped = false;
+            authorCharacter.items[index].pocket = "Chão";
         }
         i++;
       }
@@ -152,6 +151,7 @@ async function equipItem(conversation, ctx) {
         const index = authorCharacter.items.findIndex((item) => item.name.toLowerCase() === inventoryList[i].toLowerCase());
         if (index !== -1) {
             authorCharacter.items[index].equipped = true;
+            authorCharacter.items[index].pocket = "Corpo";
         }
         i++;
       }
