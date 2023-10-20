@@ -7,20 +7,20 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   const authorId = String(ID);
   let totalWeightAllPockets;
   
-  CHARACTERS1.map(value =>{
-    if(value.id !== "cube"){
-    value.items.map(item =>{
-      item.pocket = item.equipped === true ? "Corpo": "Chão";
-    });
-    value.pockets = [{name:"Corpo", equipped: true}, {name:"Chão", equipped: false}];
-    }else{
-    value.items.map(item =>{
-      item.pocket = "cubo";
-    });
-    value.pockets = [{name:"cubo", equipped: true}];
-    }
-  });
-  deleteItem("characters", CHARACTERS1);
+  // CHARACTERS1.map(value =>{
+  //   if(value.id !== "cube"){
+  //   value.items.map(item =>{
+  //     item.pocket = item.equipped === true ? "Corpo": "Chão";
+  //   });
+  //   value.pockets = [{name:"Corpo", equipped: true}, {name:"Chão", equipped: false}];
+  //   }else{
+  //   value.items.map(item =>{
+  //     item.pocket = "cubo";
+  //   });
+  //   value.pockets = [{name:"cubo", equipped: true}];
+  //   }
+  // });
+  // deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
       if(fun === "status"){

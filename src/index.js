@@ -101,13 +101,13 @@ bot.command("help", async (ctx) => {
 
 const mensagem = `Olá Jogador\\!\n\nVenho aqui mais uma vez para anunciar a mais nova atualização\\!\n\nAgora não mais terá problemas com a bagunça que é os seus itens pois poderá organizá\\-los de forma prática e fácil\\!\n\nO que trago para você é um sistema de *COMPARTIMENTOS* que você poderá *equipar* ou *desequipar* a qualquer momento, levando todos os itens contidos nele juntos, portanto uma mochila equipada, quando desequipada irá desequipar também todos os itens nela\\. É possível também transferir itens individualmente para compartimentos disponíveis, então se vocẽ tem uma adaga equipada no seu compartimento "cinto" \\(que está na sua cintura, por isso equipado\\) você pode transferir para o compartimento "baú" \\(que povavelmente vai estar desequipado a não ser que esteja arrastando ou carregando o baú nas costas\\) assim deixando a adaga desequipada\\. Lembrando que itens desequipados não são vistos pelo mestres, significando que não estão com você\\. Você também é capaz de remover compartimentos, e com isso *escolher se quer remover todos os itens juntos ou não*\\.\\.\\. como decidir jogar uma mochila no fogo, assim queimando a mochila e todos os itens dentro ou apenas jogar todos os itens da mochila no chão e daí jogar a mochila no fogo\\.\n\nEntão testem todas as funções e commentem o que acharam e se também se houver sugestões, também existe um novo comando /help que contém Informações sobre todas as funções\\.\n\nAté a próxima\\!`;
 
-bot.command("broadcast", async (ctx) => {
-  // await ctx.reply(`${mensagem}`, {chat_id: 965254444,parse_mode: "MarkdownV2"});
-  // await ctx.reply(`${mensagem}`, {chat_id: 587760655,parse_mode: "MarkdownV2"});
-  // await ctx.reply(`${mensagem}`, {chat_id: 960580168,parse_mode: "MarkdownV2"});
-  // await ctx.reply(`${mensagem}`,{parse_mode: "MarkdownV2"});
-//   await ctx.reply("       Olá Mestre!\n\nAgora já sou capaz de registrar os status dos personagens dos seus queridos Players! Agora você tem acesso para alterar os status (PV, PF e Mana Pool ou PM) sempre que necessário, escolhendo apenas um personagem ou quantos quiser, podendo recuperar os status todos de uma vez de todos os personagens ou apenas o que você assim desejar. \n\nPeço que teste tudo o que puder e depois fala qualquer coisa la no pvd ou no OFF mesmo e por hoje é isso!", {chat_id: 744974273});
-});
+// bot.command("broadcast", async (ctx) => {
+//   await ctx.reply(`${mensagem}`, {chat_id: 965254444,parse_mode: "MarkdownV2"});
+//   await ctx.reply(`${mensagem}`, {chat_id: 587760655,parse_mode: "MarkdownV2"});
+//   await ctx.reply(`${mensagem}`, {chat_id: 960580168,parse_mode: "MarkdownV2"});
+//   // await ctx.reply(`${mensagem}`,{parse_mode: "MarkdownV2"});
+// //   await ctx.reply("       Olá Mestre!\n\nAgora já sou capaz de registrar os status dos personagens dos seus queridos Players! Agora você tem acesso para alterar os status (PV, PF e Mana Pool ou PM) sempre que necessário, escolhendo apenas um personagem ou quantos quiser, podendo recuperar os status todos de uma vez de todos os personagens ou apenas o que você assim desejar. \n\nPeço que teste tudo o que puder e depois fala qualquer coisa la no pvd ou no OFF mesmo e por hoje é isso!", {chat_id: 744974273});
+// });
 
 bot.api.setMyCommands([
   { command: "start", description: "Inicia o bot" },
