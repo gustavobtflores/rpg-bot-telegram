@@ -9,15 +9,8 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   
   // CHARACTERS1.map(value =>{
   //   if(value.id !== "cube"){
-  //   value.items.map(item =>{
-  //     item.pocket = item.equipped === true ? "Corpo": "Chão";
-  //   });
-  //   value.pockets = [{name:"Corpo", equipped: true}, {name:"Chão", equipped: false}];
-  //   }else{
-  //   value.items.map(item =>{
-  //     item.pocket = "cubo";
-  //   });
-  //   value.pockets = [{name:"cubo", equipped: true}];
+    
+  //   value.status.notifications = true;
   //   }
   // });
   // deleteItem("characters", CHARACTERS1);

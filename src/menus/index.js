@@ -2,24 +2,41 @@ const { Menu, MenuRange } = require("@grammyjs/menu");
 const { getFormattedCharacters } = require("../utils");
 const { playersID } = require("../constants/characters");
 const { deleteItem, catchItem } = require("../config/storage");
+const { InlineKeyboard } = require("grammy");
 
 
 const menuHelp = new Menu("menu-help")
   .text("❎", (ctx) => ctx.deleteMessage());
 
-async function recoverPvPf(idStats){
+async function recoverPvPf(idStats, ctx){
   
   const CHARS = await catchItem("characters");
 
   await idStats.forEach((value, i) => {
       const char = CHARS.find(id => id.name === value);
-      if(!P[4].has("mana")){  
+      if(!P[4].has("mana") && char.status.pvAtual !== char.status.pvMax && char.status.pfAtual !== char.status.pfMax) {  
+        
+        if(char.status.notifications){
+          const modPv = char.status.pvMax !== char.status.pvAtual ? `\nPV (${char.status.pvMax}): ${char.status.pvAtual} => ${char.status.pvMax}`:"";
+          const modPf = char.status.pfMax !== char.status.pfAtual ? `\nPF (${char.status.pfMax}): ${char.status.pfAtual} => ${char.status.pfMax}`: "";
+          
+          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> ${desc[i]}\n${modPv}${modPf}`, { chat_id: parseInt(char.id)});
+        }
         char.status.pvAtual = char.status.pvMax;
         char.status.pfAtual = char.status.pfMax;
         char.status.log.push("Recuperação total PV e PF");
-      }else{
+      }else if(P[4].has("mana") && char.status.pmAtual !== 0){
+        
+        if(char.status.notifications){
+          
+        const modPm = `\nPM (${char.status.pmMax}): ${char.status.pmAtual} => ${(char.status.pmAtual - 8) < 0 ? `0` : `${char.status.pmAtual - 8}`}`;
+        
+          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> "Novo raiar do dia -8 PM"\n${modPm}`, { chat_id: parseInt(char.id)});
+        }
+        
+          
         char.status.pmAtual = (char.status.pmAtual - 8) < 0 ? 0 : char.status.pmAtual - 8;
-        char.status.log.push("Novo raiar do dia +8 PM");
+        char.status.log.push("Novo raiar do dia -8 PM");
       }
       if(char.status.log.length > 5){
           char.status.log.shift();
@@ -106,6 +123,28 @@ const itemAddMenu = new Menu("item-add-menu")
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-cube");
   });
+  
+  
+  
+// async function checkNotifications(ctx){
+  
+//   const CHARStoNotificate = await catchItem("characters")
+//   const charToNotificate = CHARStoNotificate.find(value => String(ctx.from.id) === value.id);
+//   return CHARStoNotificate.status.notifications;
+// }
+
+// async function toggleNotifications(){
+  
+//   if(){
+//     await toggleP("notifications", 3);
+//   }else{
+//     await toggleP("notifications", 3);
+//   }
+  
+// }
+  
+        
+        
 
 const mainMenu = new Menu("main-menu")
   .submenu("Itens", "inventory-menu", async (ctx) => {
@@ -117,18 +156,38 @@ const mainMenu = new Menu("main-menu")
   .submenu("Cubo", "cube-menu", async (ctx) => {
     ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
   }).row()
+  .text("Status:")
   .text(
-    (ctx) => (ctx.from && P[0].has("status") ?"❌ Status" : "⭕ Status"),
+    (ctx) => (ctx.from && P[4].has("status") ?"❌ Listar" : "⭕ Listar"),
     async (ctx) => {
-      deleteP(0);
-      toggleP("status", 0);
+      await toggleP("status", 4);
 
-      if (P[0].has("status")) {
+      if (P[4].has("status")) {
         ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "status")}ˆˆEstes são os seus status por enquantoˆˆ`);
       } else {
         ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
       }
-    });
+    })
+    .text( 
+      async (ctx) =>{
+      
+      
+        const CHARStoNotificate = await catchItem("characters")
+        const charToNotificate = CHARStoNotificate.find(value => String(ctx.from.id) === value.id);
+        return (charToNotificate.status.notifications ? "🔔" : "🔕")
+      },
+      async (ctx) =>{
+        const CHARStoNotificate = await catchItem("characters")
+        const charToNotificate = CHARStoNotificate.find(value => String(ctx.from.id) === value.id);
+  
+        if (charToNotificate.status.notifications) {
+          charToNotificate.status.notifications = false;
+        } else {
+          charToNotificate.status.notifications = true;
+        }
+        await deleteItem("characters", CHARStoNotificate);
+        ctx.menu.update();
+      });
   
   
 const inventoryMenu = new Menu("inventory-menu")
@@ -380,9 +439,9 @@ const playerss = new Menu("players")
   
 const fullRecoverAll = new Menu("full-recover-all")
   .text("Sim", async (ctx) => {
-  await recoverPvPf(idStatus);
+  await recoverPvPf(idStatus, ctx);
   idStatus = [];
-  await ctx.deleteMessage();
+  await ctx.editMessageText("Status recuperados com sucesso!", {reply_markup: new InlineKeyboard()});
   })
   .back("Não", async (ctx) =>{
     deleteP(9);

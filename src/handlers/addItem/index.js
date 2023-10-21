@@ -11,7 +11,6 @@ async function addItem(conversation, ctx) {
 
   let ID = ctx.update.callback_query.from.id;
 
-
   const CHARACTERS = await catchItem("characters");
   const blank = new InlineKeyboard();
   const authorId = String(ID);

@@ -71,16 +71,32 @@ async function status(conversation, ctx){
   if(res.match === "yes"){
     await conversation.external(async () => {
       await idStatus.forEach((value, i) => {
-      
-      const char = CHARACTERS.find(id => id.name === value);
-    
-      char.status.pvAtual = (char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? char.status.pvMax : char.status.pvAtual + statusValue[i][0];
-      char.status.pfAtual = (char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? char.status.pfMax : char.status.pfAtual + statusValue[i][1];
-      char.status.pmAtual = (char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? char.status.pmMax : char.status.pmAtual + statusValue[i][2];
-      char.status.log.push(desc[i]);
-      if(char.status.log.length > 5){
-        char.status.log.shift();
-      }
+        
+        const char = CHARACTERS.find(id => id.name === value);
+        
+        const newStatus = [
+          (char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? char.status.pvMax : char.status.pvAtual + statusValue[i][0], 
+          (char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? char.status.pfMax : char.status.pfAtual + statusValue[i][1],
+          (char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? char.status.pmMax : char.status.pmAtual + statusValue[i][2]
+          ];
+          
+        if(char.status.notifications){
+          const modPv = newStatus[0] !== char.status.pvAtual ? `\nPV (${char.status.pvMax}): ${char.status.pvAtual} => ${newStatus[0]}`:"";
+          const modPf = newStatus[1] !== char.status.pfAtual ? `\nPF (${char.status.pfMax}): ${char.status.pfAtual} => ${newStatus[1]}`: "";
+          const modPm = newStatus[2] !== char.status.pmAtual ? `\nPM (${char.status.pmMax}): ${char.status.pmAtual} => ${newStatus[2]}` : "";
+          
+          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> ${desc[i]}\n${modPv}${modPf}${modPm}`, { chat_id: parseInt(char.id)});
+        }
+        
+        
+        char.status.pvAtual = newStatus[0];
+        char.status.pfAtual = newStatus[1];
+        char.status.pmAtual = newStatus[2];
+        char.status.log.push(desc[i]);
+        if(char.status.log.length > 5){
+          char.status.log.shift();
+        }
+        
       
       });
       await deleteItem("characters", CHARACTERS);
