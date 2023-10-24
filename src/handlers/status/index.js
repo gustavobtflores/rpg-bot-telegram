@@ -36,7 +36,7 @@ async function status(conversation, ctx){
   const pvTexto = statusValue[i][0] !== 0 ? `PV(${char.status.pvMax}): ${char.status.pvAtual} ${statusValue[i][0] > 0 ? `+${statusValue[i][0]}`: `${statusValue[i][0]}`} => ${(char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? `${char.status.pvMax}` : `${char.status.pvAtual + statusValue[i][0]}`}` : '';
   const pfTexto = statusValue[i][1] !== 0 ? `PF(${char.status.pfMax}): ${char.status.pfAtual} ${statusValue[i][1] > 0 ? `+${statusValue[i][1]}`: `${statusValue[i][1]}`} => ${(char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? `${char.status.pfMax}` : `${char.status.pfAtual + statusValue[i][1]}`}` : '';
   const pmTexto = statusValue[i][2] !== 0 ? `PM(${char.status.pmMax}): ${char.status.pmAtual} ${statusValue[i][2] > 0 ? `+${statusValue[i][2]}`: `${statusValue[i][2]}`} => ${(char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? `${char.status.pmMax}` : `${char.status.pmAtual + statusValue[i][2]}`}` : '';
-  desc.push(`${logList[i]} ${statusValue[i].map((item, u) => { 
+  desc.push(`${logList[i] === undefined ? logList[0] : logList[i]} ${statusValue[i].map((item, u) => { 
   if(item !== 0){
   var atr = "";
     if(u === 0){
@@ -58,9 +58,8 @@ async function status(conversation, ctx){
     
   }`)
   
-  
   const textoFinal = [pvTexto, pfTexto, pmTexto,"DESCRIÇÃO: " + desc[i]].filter(texto => texto !== '').join('\n');
-
+  
   return `${value}\n\n${textoFinal}`;
 }).join("\n\n")}\n\nConfirma?`, { reply_markup: confirmStatus});
 

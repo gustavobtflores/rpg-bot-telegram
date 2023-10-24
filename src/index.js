@@ -1,10 +1,10 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
 const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem } = require("./handlers/imports");
-const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp } = require("./menus");
+const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 
-const weblink = "http://t.me/oEscudeiro_bot/DGrules";
+const weblink = "http://t.me/Textee_bot/Ficha";
 
 bot.use(conversations());
 bot.use(createConversation(modifyItem, "modify-item"));

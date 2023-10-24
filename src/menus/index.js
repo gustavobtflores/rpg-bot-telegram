@@ -380,6 +380,8 @@ const DgMMenu = new Menu("Dungeon-Master-menu")
     await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false, "status")}\n\nˆˆEstes são os status dos personagens atualmenteˆˆ\n\nSelecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.`);
 }); 
 
+var n =0;
+
 function statusReset(){
    for (let i = 0; i < statusValue.length; i++) {
    for (let j = 0; j < statusValue[i].length; j++) {
@@ -387,6 +389,7 @@ function statusReset(){
   }
 }
   idStatus = [];
+  n =0;
 }
 
 const playerss = new Menu("players")
@@ -522,7 +525,6 @@ const listPlayersMenu = new Menu("list-itens-players")
   );
 var statusName = ["PV","PF","PM"];
 var statusValue = [[0,0 ,0],[0,0 ,0],[0,0 ,0]];
-var n = 0;
 
 const changeStatus = new Menu("dynamic")
   .dynamic(async () => {
@@ -608,5 +610,6 @@ module.exports = {
   idStatus,
   fullRecoverAll,
   pocketsMenu,
-  menuHelp
+  menuHelp,
+  idStatus
 };
