@@ -10,19 +10,32 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   // CHARACTERS1.map(value =>{
   //   if(value.id !== "cube"){
     
-  //   value.status.notifications = true;
+  //   value.progress = "";
   //   }
   // });
   // deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
-      if(fun === "status"){
+    if(fun === "xp"){
+      let xpMod =[]
+      let xp = [];
+      if(!equipped && character.id !== playersID.Mestre && character.id !== playersID.Rowan && character.id !== playersID.Cubo) {
+        xp.push(" - "+ character.name + "\n\n" + character.progress + "\n\n---------------------\n");
+     }else if(character.id === authorId){
+     
+        xp.push(character.progress);
+     }
+     console.log(xp);
+     
+    return `${xp.map(au => au)}`;
+ 
+    }else if(fun === "status"){
       //  aqui equipped === true indica que é apenas para o personagem, se for false é pro mestre
       if(!equipped && character.id !== playersID.Mestre && character.id !== playersID.Rowan && character.id !== playersID.Cubo){
-        var stats = `${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nÚltimos acontecimentos:\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : `-> ${log}.`
+        var stats = ` - ${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nÚltimos acontecimentos:\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : `-> ${log}.`
         ).join(";\n")}`
         
-      return `${stats}\n\n`;
+      return `${stats}\n\n---------------------\n`;
       
       }else if(character.id === authorId){
         var stats = `PV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\n\nÚltimos acontecimentos:\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : ` -> ${log}.`
@@ -62,7 +75,7 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
       return `Peso em ${pocket}: ${totalWeight}kg`;
       }).join("\n\n");
       
-      return `${character.name}${character.id !== "cube" ? `\n\n${pocketsInfo}` : ``}` + `\n\n-> Peso total: ${totalWeightAllPockets}Kg <-\n\n---------------------\n`;
+      return ` - ${character.name}${character.id !== "cube" ? `\n\n${pocketsInfo}` : ``}` + `\n\n-> Peso total: ${totalWeightAllPockets}Kg <-\n\n---------------------\n`;
     } else if (authorId === character.id) {
       let pocketsInfo;
       if (fun === "pockets"){

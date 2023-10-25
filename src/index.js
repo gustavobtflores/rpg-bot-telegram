@@ -1,8 +1,12 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem } = require("./handlers/imports");
-const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus } = require("./menus");
+const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress } = require("./handlers/imports");
+const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus, progressMenu, xpMenu, statusMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
+const { catchItem, deleteItem } = require("./config/storage");
+const { InlineKeyboard } = require("grammy");
+
+
 
 const weblink = "http://t.me/Textee_bot/Ficha";
 
@@ -22,11 +26,13 @@ bot.use(createConversation(modifyPockets,"modify-pockets"));
 bot.use(createConversation(equipPockets,"equip-pockets"));
 bot.use(createConversation(unequipPockets,"unequip-pockets"));
 bot.use(createConversation(transferItem,"transfer-item"));
+bot.use(createConversation(progress,"progress"));
 
 
 bot.use(DgMMenu);
 DgMMenu.register(listPlayersMenu);
 DgMMenu.register(playerss);
+DgMMenu.register(progressMenu);
 playerss.register(changeStatus);
 playerss.register(fullRecoverAll);
 
@@ -39,6 +45,9 @@ mainMenu.register(equipPocketMenu);
 mainMenu.register(cubeMenu);
 mainMenu.register(inventoryMenu);
 mainMenu.register(pocketsMenu);
+mainMenu.register(statusMenu);
+mainMenu.register(xpMenu);
+
 
 bot.use(menuHelp);
 
@@ -87,7 +96,11 @@ bot.command("transferir", async (ctx) => {
 });
 
 bot.command("status", async (ctx) => {
-  await ctx.reply(await getFormattedCharacters(ctx.from.id, true, "status"));
+  await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: statusMenu});
+});
+
+bot.command("progresso", async (ctx) => {
+  await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: xpMenu});
 });
 
 bot.command("help", async (ctx) => {
@@ -99,7 +112,11 @@ bot.command("help", async (ctx) => {
 });
 
 
-const mensagem = `Olá Jogador\\!\n\nTão logo fui tão logo já voltei, sei que nem tiveram o gostinho da ultima atualização mas ja venho com mais uma novidade\\!\n\nAgora posso te notificar sempre que o saudoso Mestre fizer alguma alteração em seus personagens\\. De momento as notificações já estão *ATIVADAS* e podem ser desativadas no sino que se encontra no menu principal em /start\\.\n\nAté a próxima\\!`;
+const mensagem = `Olá Jogador\\! Mais uma vez venho com outra novidade\\!\n\nAgora posso registrar seu progresso no jogo e o nosso Mestre poderá acompanhar tais registros\\. Basta seguir para o menu principal /start ou através de /progresso e registrar seu progresso por lá\\!\n\nEis um exemplo do personagem Tibius:\n\n_Habilidades \\(XP/Horas\\)_\n\n_*BRIGA \\- \\(1/0\\);_\n_*ALQUIMIA \\- \\(0/10\\);_\n_*COMÉRCIO \\- \\(1/0\\);_\n_*ATUAÇÃO \\- \\(1/0\\);_\n_*HT \\- \\(1/0\\);_\n_*INTIMIDAR \\(2/0\\);_\n\nAssim será visto pelo Mestre e se ocorrer alguma incompatibilidade com as anotações dele ele poderá nos avisar.\n\nSó lembrando que este é um exemplo\\. Você pode adicionar os seus pontos na carteira ou escrever brevemente o que pretende fazer depois, *o que importa mesmo é estar listado as pericias/magias/atributos os quais você tem algum XP ou hora aprendida*\\.\n\nAté a próxima\\!`;
+
+
+
+// `Olá Jogador\\!\n\nTão logo fui tão logo já voltei, sei que nem tiveram o gostinho da ultima atualização mas ja venho com mais uma novidade\\!\n\nAgora posso te notificar sempre que o saudoso Mestre fizer alguma alteração em seus personagens\\. De momento as notificações já estão *ATIVADAS* e podem ser desativadas no sino que se encontra no menu principal em /start\\.\n\nAté a próxima\\!`;
 
 // `Olá Jogador\\!\n\nVenho aqui mais uma vez para anunciar a mais nova atualização\\!\n\nAgora não mais terá problemas com a bagunça que é os seus itens pois poderá organizá\\-los de forma prática e fácil\\!\n\nO que trago para você é um sistema de *COMPARTIMENTOS* que você poderá *equipar* ou *desequipar* a qualquer momento, levando todos os itens contidos nele juntos, portanto uma mochila equipada, quando desequipada irá desequipar também todos os itens nela\\. É possível também transferir itens individualmente para compartimentos disponíveis, então se vocẽ tem uma adaga equipada no seu compartimento "cinto" \\(que está na sua cintura, por isso equipado\\) você pode transferir para o compartimento "baú" \\(que povavelmente vai estar desequipado a não ser que esteja arrastando ou carregando o baú nas costas\\) assim deixando a adaga desequipada\\. Lembrando que itens desequipados não são vistos pelo mestres, significando que não estão com você\\. Você também é capaz de remover compartimentos, e com isso *escolher se quer remover todos os itens juntos ou não*\\.\\.\\. como decidir jogar uma mochila no fogo, assim queimando a mochila e todos os itens dentro ou apenas jogar todos os itens da mochila no chão e daí jogar a mochila no fogo\\.\n\nEntão testem todas as funções e commentem o que acharam e se também se houver sugestões, também existe um novo comando /help que contém Informações sobre todas as funções\\.\n\nAté a próxima\\!`;
 
@@ -121,6 +138,7 @@ bot.api.setMyCommands([
   { command: "listar", description: "Lista os itens do inventário do seu personagem" },
   { command: "equip", description: "Equipar/desequipar compartimentos" },
   { command: "status", description: "Mostra seus status atual" },
+  { command: "progresso", description: "Mostra ou modifica seu progresso" },
   { command: "regras", description: "Regras" },
 ]);
 
