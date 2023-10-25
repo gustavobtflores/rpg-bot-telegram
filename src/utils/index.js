@@ -25,7 +25,6 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
      
         xp.push(character.progress);
      }
-     console.log(xp);
      
     return `${xp.map(au => au)}`;
  
