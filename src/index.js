@@ -8,7 +8,7 @@ const { InlineKeyboard } = require("grammy");
 
 
 
-const weblink = "http://t.me/Textee_bot/Ficha";
+const weblink = "http://t.me/oEscudeiro_bot/DGrules";
 
 bot.use(conversations());
 bot.use(createConversation(modifyItem, "modify-item"));
@@ -92,18 +92,22 @@ bot.command("equip", async (ctx) => {
 });
 
 bot.command("transferir", async (ctx) => {
+  deleteP(9);
   await ctx.conversation.enter("transfer-item");
 });
 
 bot.command("status", async (ctx) => {
+  deleteP(9);
   await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: statusMenu});
 });
 
 bot.command("progresso", async (ctx) => {
+  deleteP(9);
   await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: xpMenu});
 });
 
 bot.command("help", async (ctx) => {
+  deleteP(9);
   
   if(ctx.update.message.chat.type === "private"){
     await ctx.deleteMessage()
