@@ -5,11 +5,15 @@ const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemMod
 const { getFormattedCharacters } = require("./utils");
 const { catchItem, deleteItem } = require("./config/storage");
 const { InlineKeyboard } = require("grammy");
+const { bold, fmt, hydrateReply, italic, link } = require(
+  "@grammyjs/parse-mode",
+);
 
 
 
 const weblink = "http://t.me/oEscudeiro_bot/DGrules";
 
+bot.use(hydrateReply)
 bot.use(conversations());
 bot.use(createConversation(modifyItem, "modify-item"));
 bot.use(createConversation(addItem, "add-item"));
@@ -115,6 +119,22 @@ bot.command("help", async (ctx) => {
   await ctx.reply("*Boas vindas e não temas\\! Este breve guia vem para ajudar a sanar suas dúvidas de forma clara e rápida\\!*\n\n/start \\-\\> Menu principal, por onde pode acessar todas as funções em menus navegáveis\\.\n/adicionar \\-\\> Adiciona itens ou compartimentos, se o item que estiver tentando adicionar já for existente no seu inventário ele será somado\\.\n/remover \\-\\> Remove itens ou compartimentos, ao remover item será questionado _quantos quer remover_ se houver mais de um daquele item, ao remover compartimentos é possível _remover todos os itens_ que estão naquele compartimento, o que é bastante útil se você pensar em criar um compartimento chamado lixeira, transferir todos os itens para lá e então de tempos em tempos remover todos de uma vez só\\!\n/modificar \\-\\> Modifica itens ou compartimentos\\. Permite modificar todas as propriedades dos itens e dos compartimentos, lembrando que todas as aterações feitas no compartimento afetarão também os itens que estão contidos nele\\.\n/listar \\-\\> Lista todos os itens equipados ou desequipados, acessando o menu compartimentos, porém, você é capaz de ver os compartimentos que estão vazios, ou seja, sem itens\\.\n/equip \\-\\> Desequipa compartimentos, bastante útil na hora que precisar desequipar ou equipar vários itens de uma vez só, ou seja, quando desequipa um compartimento, por exemplo, _todos os itens que pertencem aquele compartimento também serão desequipados_, então numa situação onde você estã com uma mochila nas costas você pode se livrar daquele peso todo de uma vez\\!\n/status \\-\\> Lista os status atuais, além de poder alterar as notificações do mesmo\\. Mostra como está seu personagem indicando quais foram os últimos acontecimentos aconteceram com seu personagem\\.\n/transferir \\-\\> Transfere seus itens para qualquer compartimento\\. Com isso, você é capaz de desequipar ou equipar itens individualmente ou em grupos, transferindo para qualquer compartimento desejado\\.\n/progresso \\-\\> Lista ou modifica seu progresso, sendo de maior importância *listar as habilidades que você tem alguma XP ou hora de aprendizagem*, mas pode conter também outras Informações como pontos na carteira ou nomes de professores ou lugares\\.\n\nLembrando que itens *DESEQUIPADOS* significam que são itens que não estão com você\\! Logo, estes itens não constaram na lista de itens do mestre, então fique atento para isso\\.", {reply_markup: menuHelp, parse_mode: "MarkdownV2"});
 });
 
+bot.command('parse', async (ctx) => {
+  await ctx.replyFmt(fmt`${bold("bold!")}
+  ${bold(italic("bitalic!"))}
+  ${bold(fmt`bold ${link("blink", "example.com")} bold`)}`);
+
+  // fmt can also be called like any other function.
+  await ctx.replyFmt(
+    fmt(
+      ["", " and ", " and ", ""],
+      fmt`${bold("bold")}`,
+      fmt`${bold(italic("bitalic"))}`,
+      fmt`${italic("italic")}`,
+    ),
+  );
+})
+
 
 const mensagem = `Olá Jogador\\! Mais uma vez venho com outra novidade\\!\n\nAgora posso registrar seu progresso no jogo e o nosso Mestre poderá acompanhar tais registros\\. Basta seguir para o menu principal /start ou através de /progresso e registrar seu progresso por lá\\!\n\nEis um exemplo do personagem Tibius:\n\n_Habilidades \\(XP/Horas\\)_\n\n_*BRIGA \\- \\(1/0\\);_\n_*ALQUIMIA \\- \\(0/10\\);_\n_*COMÉRCIO \\- \\(1/0\\);_\n_*ATUAÇÃO \\- \\(1/0\\);_\n_*HT \\- \\(1/0\\);_\n_*INTIMIDAR \\(2/0\\);_\n\nAssim será visto pelo Mestre e se ocorrer alguma incompatibilidade com as anotações dele ele poderá nos avisar\\.\n\nSó lembrando que este é um exemplo\\. Você pode adicionar os seus pontos na carteira ou escrever brevemente o que pretende fazer depois, *o que importa mesmo é estar listado as pericias/magias/atributos os quais você tem algum XP ou hora aprendida*\\.\n\nAté a próxima\\!`;
 
@@ -144,6 +164,7 @@ bot.api.setMyCommands([
   { command: "status", description: "Mostra seus status atual" },
   { command: "progresso", description: "Mostra ou modifica seu progresso" },
   { command: "regras", description: "Regras" },
+  {command: "parse", description: "Teste de parse"}
 ]);
 
 bot.start({ 
