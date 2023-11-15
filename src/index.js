@@ -69,11 +69,6 @@ bot.command("adicionar", async (ctx) => {
   await ctx.reply("Você escolheu adicionar um item! Escolha onde", { reply_markup: itemAddMenu });
 });
 
-// bot.command("teste", async (ctx) => {
-//   deleteP(9);
-//   await ctx.conversation.enter("cube-to-inventory");
-// });
-
 bot.command("remover", async (ctx) => {
   deleteP(9);
   await ctx.reply("Você escolheu remover um item! Escolha de onde", { reply_markup: itemRemoveMenu });

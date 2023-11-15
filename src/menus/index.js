@@ -83,18 +83,6 @@ async function recoverPvPf(idStats, ctx){
         char.status.pvAtual = char.status.pvMax;
         char.status.pfAtual = char.status.pfMax;
         char.status.log.push("Recuperação total PV e PF");
-      }else if(P[4].has("mana") && char.status.pmAtual !== 0){
-        
-        if(char.status.notifications){
-          
-        const modPm = `\nPM (${char.status.pmMax}): ${char.status.pmAtual} => ${(char.status.pmAtual - 8) < 0 ? `0` : `${char.status.pmAtual - 8}`}`;
-        
-          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> "Novo raiar do dia -8 PM"\n${modPm}`, { chat_id: parseInt(char.id)});
-        }
-        
-          
-        char.status.pmAtual = (char.status.pmAtual - 8) < 0 ? 0 : char.status.pmAtual - 8;
-        char.status.log.push("Novo raiar do dia -8 PM");
       }
       if(char.status.log.length > 5){
           char.status.log.shift();
@@ -461,14 +449,8 @@ const playerss = new Menu("players")
   })
   .row()
   .submenu("Recuperar totalmente PV e PF de todos", "full-recover-all", (ctx) => {
-  idStatus = ["Tibius", "Abbadon", "Fergus"];
-    ctx.editMessageText("O PV e PF de todos os personagens serão recuperados totalmente, confirma?");
-  })
-  .row()
-  .submenu("Recuperar Mana Pool (8)", "full-recover-all", (ctx) => {
     idStatus = ["Tibius", "Abbadon", "Fergus"];
-    toggleP("mana", 4);
-    ctx.editMessageText("O Mana Pool (8) de todos os personagens serão recuperados, confirma?");
+    ctx.editMessageText("O PV e PF de todos os personagens serão recuperados totalmente, confirma?");
   })
   .row()
   .text(
@@ -510,7 +492,7 @@ const fullRecoverAll = new Menu("full-recover-all")
   })
   .back("Não", async (ctx) =>{
     deleteP(9);
-    ctx.editMessageText("Selecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.");
+    ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false, "status")}\n\nˆˆEstes são os status dos personagens atualmenteˆˆ\n\nSelecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.`);
     });
 
 const listPlayersMenu = new Menu("list-itens-players")
@@ -591,26 +573,54 @@ var statusValue = [[0,0 ,0],[0,0 ,0],[0,0 ,0]];
 const changeStatus = new Menu("dynamic")
   .dynamic(async () => {
     // Generate a part of the menu dynamically!
-    const range = new MenuRange();
-    
+    const range = new MenuRange();  
+    const CHARS1 = await catchItem("characters");
+    const authorCharacter = CHARS1.find(char => char.name.toLowerCase() === idStatus[n].toLowerCase());
     for(let i = 0; i<statusName.length ;i++){
+      console.log(idStatus)
       range
-        .text(`${statusName[i] === "PM" ? `${statusValue[n][2] < 0 ? `❗PM`: `PM` }` : statusName[i]}: ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
+        .text(`${statusName[i]}: ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
         .text("-3", (ctx) => {
-        statusValue[n][i]-=3;
-        ctx.menu.update();
+         let tempValue = statusValue[n][i];
+         if(i === 2){
+           statusValue[n][i]-=3;
+           let testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+             while (testeNegativo<0) {
+               statusValue[n][i] += 1;
+               testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+             }
+         }else{
+           statusValue[n][i]-=3;
+         }
+         let test = tempValue === statusValue[n][i];
+         if(!test){
+          ctx.menu.update();
+         }
         })
         .text("-", (ctx) => {
-        statusValue[n][i]-=1;
-        ctx.menu.update();
+         let tempValue = statusValue[n][i];
+         if(i === 2){
+           statusValue[n][i]-=1;
+           let testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+             while (testeNegativo<0) {
+               statusValue[n][i] += 1;
+               testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+             }
+         }else{
+           statusValue[n][i]-=1;
+         }
+         let test = tempValue === statusValue[n][i];
+         if(!test){
+          ctx.menu.update();
+         }
         })
         .text("+", (ctx) => {
-        statusValue[n][i]+=1;
-        ctx.menu.update();
+          statusValue[n][i]+=1;
+          ctx.menu.update();
         })
         .text("+3", (ctx) => {
-        statusValue[n][i]+=3;
-        ctx.menu.update();
+          statusValue[n][i]+=3;
+          ctx.menu.update();
         }).row()
     }
     return range;
@@ -622,7 +632,7 @@ const changeStatus = new Menu("dynamic")
   })
   .text("❎", (ctx) => ctx.deleteMessage())
   .text(
-    (ctx) => (statusValue[n].every(elemento => elemento === 0) !== true && statusValue[n][2] >= 0 ? "✅" : "")
+    (ctx) => (statusValue[n].every(elemento => elemento === 0) !== true ? "✅" : "")
     ,  async (ctx) => {
       
     const CHARS1 = await catchItem("characters");
