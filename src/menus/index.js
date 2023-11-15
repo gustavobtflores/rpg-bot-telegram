@@ -14,7 +14,11 @@ const statusMenuRange = new MenuRange()
       if (P[4].has("status")) {
         await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "status")}ˆˆEstes são os seus status por enquantoˆˆ`);
       } else {
-        await ctx.editMessageText("Você escolheu ver o seu progresso! Escolha o que quer fazer.");
+        if(P[4].has("main")){
+          await ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+       }else{
+          await ctx.editMessageText("Você escolheu os status! Escolha o que quer fazer.");
+        }
       }
     })
   .text( 
@@ -46,8 +50,12 @@ const xpMenuRange = new MenuRange()
 
       if (P[3].has("xp")) {
         await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "xp")}\n\nˆˆEsta é a sua relação de xp por enquantoˆˆ`);
-      } else {
-        await ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+      } else { 
+        if(P[3].has("main")){
+          await ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+        }else{
+          await ctx.editMessageText("Você escolheu ver o seu progresso! Escolha o que quer fazer.");
+        }
       }
     })
   .text("Modificar", async (ctx) =>{
@@ -174,10 +182,18 @@ const mainMenu = new Menu("main-menu")
     ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
   }).row()
   .text("Status:")
-  .dynamic(async () => statusMenuRange)
+  .dynamic(async () => {
+    await P[4].add("main");
+    return statusMenuRange;
+    
+  })
   .row()
   .text("XP:")
-  .dynamic(async () => xpMenuRange);
+  .dynamic(async () => {
+    await P[3].add("main");
+    return xpMenuRange;
+    
+  });
   
   
 const inventoryMenu = new Menu("inventory-menu")
@@ -352,11 +368,17 @@ const equipPocketMenu = new Menu("equip-pocket-menu")
   .dynamic(async () => rodape);
   
 const statusMenu = new Menu("status-menu")
-  .dynamic(async () => statusMenuRange)
+  .dynamic(async () => {
+    await P[4].delete("main");
+    return statusMenuRange;
+  })
   .dynamic(async () => rodape);
   
 const xpMenu = new Menu("xp-menu")
-  .dynamic(async () => xpMenuRange)
+  .dynamic(async () => {
+    await P[3].delete("main");
+    return xpMenuRange;
+  })
   .dynamic(async () => rodape);
   
   
