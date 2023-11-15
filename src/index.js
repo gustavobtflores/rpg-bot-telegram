@@ -1,6 +1,6 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress } = require("./handlers/imports");
+const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress, cubeToInventory } = require("./handlers/imports");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus, progressMenu, xpMenu, statusMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 const { catchItem, deleteItem } = require("./config/storage");
@@ -9,9 +9,6 @@ const { bold, fmt, hydrateReply, italic, link } = require(
   "@grammyjs/parse-mode",
 );
 
-
-
-const weblink = "http://t.me/oEscudeiro_bot/DGrules";
 
 bot.use(hydrateReply)
 bot.use(conversations());
@@ -31,6 +28,7 @@ bot.use(createConversation(equipPockets,"equip-pockets"));
 bot.use(createConversation(unequipPockets,"unequip-pockets"));
 bot.use(createConversation(transferItem,"transfer-item"));
 bot.use(createConversation(progress,"progress"));
+bot.use(createConversation(cubeToInventory, "cube-to-inventory"));
 
 
 bot.use(DgMMenu);
@@ -71,6 +69,11 @@ bot.command("adicionar", async (ctx) => {
   await ctx.reply("Você escolheu adicionar um item! Escolha onde", { reply_markup: itemAddMenu });
 });
 
+// bot.command("teste", async (ctx) => {
+//   deleteP(9);
+//   await ctx.conversation.enter("cube-to-inventory");
+// });
+
 bot.command("remover", async (ctx) => {
   deleteP(9);
   await ctx.reply("Você escolheu remover um item! Escolha de onde", { reply_markup: itemRemoveMenu });
@@ -87,12 +90,6 @@ bot.command("modificar", async (ctx) => {
 bot.command("equip", async (ctx) => {
   deleteP(9);
   await ctx.reply("Vocẽ escolheu equipar ou desequipar um compartimento!", { reply_markup: equipPocketMenu });
-});
-
- bot.command("regras", async (ctx) => {
-   deleteP(9);
-  await ctx.reply("Regras!", { reply_markup: { inline_keyboard: [[{text: "📖", url: weblink }]] } });
-  // ctx.api.deleteMessage(ctx.update.message.chat.id, ctx.update.message.message_id);
 });
 
 bot.command("transferir", async (ctx) => {
@@ -147,7 +144,6 @@ bot.api.setMyCommands([
   { command: "equip", description: "Equipar/desequipar compartimentos" },
   { command: "status", description: "Mostra seus status atual" },
   { command: "progresso", description: "Mostra ou modifica seu progresso" },
-  { command: "regras", description: "Regras" },
 ]);
 
 bot.start({ 

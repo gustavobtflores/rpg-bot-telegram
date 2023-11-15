@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P } = require("../../handlers");
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P, splitItemQuant, getCommonPockets, splitPocketQuant, } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
@@ -33,7 +33,7 @@ async function removeItem(conversation, ctx, cube) {
   
   if(!tempCube){
     
-  await ctx.reply("Escolha que tipo de compartimentos quer remover", {reply_markup: confirmPocket});
+  await ctx.reply("Escolha de que tipo de compartimento quer remover", {reply_markup: confirmPocket});
   
   var res = await conversation.waitForCallbackQuery(["equipped", "unequipped"]);
 
@@ -69,11 +69,11 @@ async function removeItem(conversation, ctx, cube) {
       return;
     }
   }
-  const listItemRemove = await removeItemDefine(inventoryList, inventoryNow, ctx, conversation);
+  const listItemRemove = await removeItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube);
 
   await ctx.reply(
     `Confira os itens que quer remover:\n\n${listItemRemove
-      .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
+      .map((item) => `"${item.pocket}":\n - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
       .join("\n\n")}\n\nPeso total a ser removido: ${listItemRemove.reduce((acc, item) => limitarCasasDecimais(acc + item.weight * item.quantity, 3), 0)}Kg - Confirma?`,
     { reply_markup: confirmRemove }
   );
@@ -83,7 +83,10 @@ async function removeItem(conversation, ctx, cube) {
   if (res.match === "yes") {
     await conversation.external(async () => {
       for (const itemToRemove of listItemRemove) {
-        const index = authorCharacter.items.findIndex((item) => item.name === itemToRemove.name);
+        const index = authorCharacter.items.findIndex((item) => {
+          return item.name === itemToRemove.name && item.pocket === itemToRemove.pocket;
+          
+        });
         if (index !== -1) {
           if (authorCharacter.items[index].quantity !== 1) {
             if (itemToRemove.quantity === authorCharacter.items[index].quantity) {
@@ -116,81 +119,83 @@ async function removeItem(conversation, ctx, cube) {
   }
 }
 
-async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation) {
+async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube) {
   var listItemRemove = [];
-
+  let commomPocket = [];
+  let pocketToRemove;
+  let itemPocket;
+  let pocketRemoved = [];
+  
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
-
-    if (item.quantity !== 1) {
-      const quant = await splitItemQuant(item);
-      ctx.reply(`Quantas unidades de ${item.name} deseja remover?`, { reply_markup: quant.InlineNumbers });
+    if(!tempCube){
+    commomPocket = await getCommonPockets(inventoryNow, item.name);
+    
+    for(let pocket of pocketRemoved){
+      let indexPocketRemoved = commomPocket.indexOf(pocket);
+      if (indexPocketRemoved > -1){
+        commomPocket.splice(indexPocketRemoved, 1);
+      }
+    }
+    if(commomPocket.length > 1){
+      const buttonRow = await splitPocketQuant(commomPocket);
+      
+      await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
+        const output = inventoryNow.map((index) => {
+        if(index.pocket === commonItemName && index.name === item.name){
+          return  `"${index.pocket}":\n\n - ${index.name}: ${index.weight}Kg - ${index.quantity}Un => ${Number((index.weight * index.quantity).toFixed(3))}Kg\nDescrição: ${index.desc}`;
+        }
+        return '';
+        });
+        
+        return output;
+      }).join("\n\n").replace(/,/g, '')}`,{ reply_markup: buttonRow.InlineNumbers});
+      
+      var res = await conversation.waitForCallbackQuery(buttonRow.itemString);
+      
+      await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
+    
+      pocketToRemove = res.match;
+      
+      itemPocket = { ...inventoryNow.find(index => {
+        return item.name === index.name && pocketToRemove === index.pocket;
+      })};
+      
+    }else if(commomPocket.length === 1 ){
+      
+      pocketToRemove = commomPocket[0];
+      
+      itemPocket = { ...inventoryNow.find(index => {
+        return item.name === index.name && pocketToRemove === index.pocket;
+      })};
+      
+    }else{
+      pocketToRemove = item.pocket;
+      itemPocket ={...item};
+    }}else{
+      itemPocket ={ ...item};
+      pocketToRemove = item.pocket;
+      commomPocket.push(item);
+    }
+    
+    if(commomPocket.length !== 0 ) {
+    if (itemPocket.quantity !== 1) {
+      const quant = await splitItemQuant(itemPocket);
+      await ctx.reply(`Quantas unidades de ${itemPocket.name} do compartimento ${itemPocket.pocket} deseja remover?`, { reply_markup: quant.InlineNumbers });
 
       var res = await conversation.waitForCallbackQuery(quant.itemString);
 
-      item.quantity = parseInt(res.match);
+      itemPocket.quantity = parseInt(res.match);
 
-      ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
+      await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
     }
-    listItemRemove.push(item);
-  }
+    itemPocket.pocket = pocketToRemove;
+    pocketRemoved.push(pocketToRemove);
+    listItemRemove.push(itemPocket);
+  }}
   return listItemRemove;
 }
 
-function splitItemQuant(item) {
-  var itemQuant = [];
-  var itemString = [];
-  for (let i = 1; i <= item.quantity; i++) {
-    var numero = i.toString();
-    itemQuant.push([numero, numero]);
-    itemString.push(numero);
-  }
-
-  var buttonRow = itemQuant.map(([label, data]) => InlineKeyboard.text(label, data));
-
-  const tamanhoDoGrupo = calcularX(itemString.length);
-  const arrayDividida = [];
-
-  for (let i = 0; i < buttonRow.length; i += tamanhoDoGrupo) {
-    const grupo = buttonRow.slice(i, i + tamanhoDoGrupo);
-    arrayDividida.push(grupo);
-  }
-  const InlineNumbers = InlineKeyboard.from(arrayDividida);
-
-  return { InlineNumbers, itemString };
-}
-function calcularX(tamanhoArray) {
-  switch (true) {
-    case tamanhoArray <= 8:
-      return 8;
-    case tamanhoArray <= 10:
-      return 5;
-    case tamanhoArray <= 12:
-      return 6;
-    case tamanhoArray <= 14:
-      return 7;
-    case tamanhoArray <= 16:
-      return 8;
-    case tamanhoArray <= 18:
-      return 6;
-    case tamanhoArray <= 21:
-      return 7;
-    case tamanhoArray <= 24:
-      return 8;
-    case tamanhoArray <= 28:
-      return 7;
-    case tamanhoArray <= 32:
-      return 8;
-    case tamanhoArray <= 35:
-      return 7;
-    case tamanhoArray <= 40:
-      return 8;
-    default:
-      // Se o tamanho for maior do que 40, você pode lidar com isso de acordo com sua lógica.
-      // Aqui, está retornando 8, mas você pode ajustar conforme necessário.
-      return 8;
-  }
-}
 module.exports = {
   removeItem,
 };

@@ -6,10 +6,21 @@ const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, l
 
 const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*$/;
 
-async function addItem(conversation, ctx) {
+async function addItem(conversation, ctx, cube) {
   let enter = "\n\n\n\n\n\n\n\n";
 
-  let ID = ctx.update.callback_query.from.id;
+  let ID = "";
+  let tempCube = cube;
+  let equipped;
+  let pocketToStore;
+  if (cube === true) {
+    ID = "cube";
+    tempCube = cube;
+    equipped = true;
+  } else {
+    ID = ctx.update.callback_query.from.id;
+    tempCube = false;
+  }
 
   const CHARACTERS = await catchItem("characters");
   const blank = new InlineKeyboard();
@@ -21,25 +32,28 @@ async function addItem(conversation, ctx) {
   if (!handleChatTypeResponse(authorId, ctx)) {
     return;
   }
-  
+  if(!tempCube){
   await ctx.reply(`Você quer adicionar os itens em que tipo de compartimento?`, {reply_markup: confirmPocket});
   
   var pocketType = await conversation.waitForCallbackQuery(["equipped","unequipped"]);
-  const equipped = pocketType.match === "equipped" ? true : false ;
+  equipped = pocketType.match === "equipped" ? true : false ;
   var pocket = [ ...pocketsNow.map((item) => item.equipped === equipped ? item.name : "") ];
     
   const quant = await splitPocketQuant(pocket);
     
-  await ctx.editMessageText(`Escolha para qual compartimento quer transferir os itens: \n\n${await getFormattedCharacters(authorId, equipped, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
+  await ctx.editMessageText(`Escolha para qual compartimento quer adicionar os itens: \n\n${await getFormattedCharacters(authorId, equipped, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
     
   var res = await conversation.waitForCallbackQuery(quant.itemString);
-  const pocketToStore = res.match;
-  console.log(pocketToStore);
-
+  pocketToStore = res.match;
 
   await ctx.editMessageText(
     `Escreva o item que quer adicionar em ${pocketToStore} seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo 1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo 2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena`, {reply_markup: blank, message_id: pocketType.update.callback_query.message.message_id}
   );
+    
+  }else{
+    pocketToStore = "cubo";
+    await ctx.reply(`Escreva o item que quer adicionar no cubo seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nPode adicionar mais de um item separando por ; ou enter.\n\nExemplo 1:\n escudo, 2, 1, de metal; adaga, 1, 2, pequena\n\nExemplo 2: \nescudo, 2, 1, de metal\nadaga, 1, 2, pequena`)
+  }
 
   const { message } = await conversation.wait();
 
@@ -48,10 +62,11 @@ async function addItem(conversation, ctx) {
   }
 
   const chatID = message.chat.id;
-  var modList = [];
   const flagAdd = true;
-  var nonAdd = [];
   const confirmAdd = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
+  let parsedList = [];
+  let inventoryAdd = [];
+  var inventoryNow = authorCharacter.items.map((item) => item);
 
   const inventoryList = await extractInventoryItemsFromMessage(message.text, flagAdd);
   for (let itemInInventory of inventoryList) {
@@ -62,41 +77,39 @@ async function addItem(conversation, ctx) {
 
       if (res.match === "yes") {
         ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-        await addItem(conversation, ctx);
+        await addItem(conversation, ctx, tempCube);
       } else {
         return ctx.editMessageText("Ok, então não vou adicionar nada.", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
       }
       return;
     }
     const parsedItem = await parseItemFromInventoryString(itemInInventory);
-
-    var test = authorCharacter.items.find((index) => index.name.toLowerCase() === parsedItem.name.toLowerCase());
-    if (!test) {
-      modList.push(parsedItem);
-    } else {
-      nonAdd.push(parsedItem);
-    }
+    
+    
+    await parsedList.push(parsedItem);
   }
+  inventoryAdd = await addItemDefine(parsedList, inventoryNow, pocketToStore, ctx, conversation);
+  
 
-  if (modList.length === 0) {
-    ctx.reply(`Estes itens serão somados aos itens já existentes no seu inventário:\n\n${nonAdd.map((item) => ` - ${item.name} => ${item.quantity}Un`).join("\n\n")}\n\nConfirma?`, {
+  if (inventoryAdd.modList.length === 0) {
+    await ctx.reply(`Estes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${inventoryAdd.nonAdd.map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`).join("\n\n")}\n\nPeso total a ser adicionado: ${limitarCasasDecimais(inventoryAdd.nonAdd.reduce((acc, item) => acc + limitarCasasDecimais(item.weight * item.quantity, 3), 0),3)}Kg - Confirma?`, {
       reply_markup: confirmAdd,
     });
-  } else if (nonAdd.length === 0) {
-    ctx.reply(
-      `Estes itens serão adicionados em ${pocketToStore}:\n\n${modList
+  } else if (inventoryAdd.nonAdd.length === 0) {
+    await ctx.reply(
+      `Estes itens serão adicionados em ${pocketToStore}:\n\n${inventoryAdd.modList
         .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
-        .join("\n\n")}\n\nPeso total a ser adicionado: ${modList.reduce((acc, item) => acc + limitarCasasDecimais(item.weight * item.quantity, 3), 0)}Kg - Confirma?`,
+        .join("\n\n")}\n\nPeso total a ser adicionado: ${limitarCasasDecimais(inventoryAdd.modList.reduce((acc, item) => acc + limitarCasasDecimais(item.weight * item.quantity, 3), 0),3)}Kg - Confirma?`,
       { reply_markup: confirmAdd }
     );
   } else {
-    ctx.reply(
-      `Estes itens serão adicionados em ${pocketToStore}:\n\n${modList
+    await ctx.reply(
+      `Estes itens serão adicionados em ${pocketToStore}:\n\n${inventoryAdd.modList
         .map((item) => `- ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg\nDescrição: ${item.desc}`)
-        .join("\n\n")}\n\nEstes itens serão somados aos itens já existentes no seu inventário:\n\n${nonAdd
-        .map((item) => ` - ${item.name} => ${item.quantity}Un`)
+        .join("\n\n")}\n\nEstes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${inventoryAdd.nonAdd
+        .map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`)
         .join("\n\n")}\n\nPeso total a ser adicionado: ${limitarCasasDecimais(
-        modList.reduce((acc, item) => acc + item.weight * item.quantity, 0) + nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0),
+        inventoryAdd.modList.reduce((acc, item) => acc + item.weight * item.quantity, 0) + inventoryAdd.nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0),
         3
       )}Kg - Confirma?`,
       { reply_markup: confirmAdd }
@@ -107,7 +120,7 @@ async function addItem(conversation, ctx) {
 
   if (res.match === "yes") {
     await conversation.external(async () => {
-      await modList.forEach((item) => {
+      await inventoryAdd.modList.forEach((item) => {
         var test = authorCharacter.items.find((index) => index.name.toLowerCase() === item.name.toLowerCase());
         const itemPocket = authorCharacter.pockets.find(pocket => pocket.name === pocketToStore);
         
@@ -120,13 +133,16 @@ async function addItem(conversation, ctx) {
         }
       );
 
-      if (nonAdd.length !== 0) {
-        await nonAdd.forEach((item) => {
-          const index = authorCharacter.items.findIndex((i) => i.name.toLowerCase() === item.name.toLowerCase());
+      if (inventoryAdd.nonAdd.length !== 0) {
+        await inventoryAdd.nonAdd.forEach((item) => {
+          const index = authorCharacter.items.findIndex((i) =>{ 
+            return i.name.toLowerCase() === item.name.toLowerCase() && i.pocket === pocketToStore;
+            
+          });
           authorCharacter.items[index].quantity += item.quantity;
         });
       }
-      saveItem("characters", CHARACTERS);
+      await saveItem("characters", CHARACTERS);
     });
 
     await ctx.editMessageText(`Itens adicionados ao inventário do ${authorCharacter.name}.\n\nQuer adicionar mais itens?`, {
@@ -139,7 +155,7 @@ async function addItem(conversation, ctx) {
     if (res.match === "yes") {
       ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
 
-      await addItem(conversation, ctx);
+      await addItem(conversation, ctx, tempCube);
     } else {
       ctx.editMessageText("Ok, obrigado pelos itens!", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
     }
@@ -149,13 +165,61 @@ async function addItem(conversation, ctx) {
 
     if (res.match === "yes") {
       await ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-      await addItem(conversation, ctx);
+      await addItem(conversation, ctx, tempCube);
     } else {
       ctx.editMessageText("Ok, estarei aqui se precisar se livrar de algumas coisas haha!", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
     }
   }
 }
 
+
+async function addItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation, tempCube) {
+  var modList = [];
+  var nonAdd = [];
+  var remove = [];
+  let commomPocket = [];
+  let pocketToRemove;
+  let itemPocket;
+  let pocketRemoved = [];
+  
+  for (let itemToAdd of inventoryList) {
+    const test = inventoryNow.find((index) => {
+      return index.name.toLowerCase() === itemToAdd.name.toLowerCase() && index.pocket === pocketToStore;
+    });
+    if(test){
+      
+        let sameItemIndex = -1;
+        for (let j = 0; j < nonAdd.length; j++) {
+          if (nonAdd[j].name === itemToAdd.name) {
+            sameItemIndex = j;
+            break;
+          }
+        }
+        
+        if (sameItemIndex > -1){
+          nonAdd[sameItemIndex].quantity += itemToAdd.quantity;
+        }else{
+          itemToAdd.desc = test.desc;
+          itemToAdd.weight = test.weight;
+          nonAdd.push({ ...itemToAdd});
+        }
+      } else{
+        let sameItemIndex = -1;
+        for (let j = 0; j < modList.length; j++) {
+          if (modList[j].name === itemToAdd.name) {
+            sameItemIndex = j;
+            break;
+          }
+        }
+        if (sameItemIndex > -1){
+          modList[sameItemIndex].quantity += itemToAdd.quantity;
+        }else{
+          modList.push( { ...itemToAdd});
+        }
+      }
+  }
+  return { modList, nonAdd};
+}
 
 module.exports = {
   addItem,

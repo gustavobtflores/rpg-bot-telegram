@@ -7,7 +7,8 @@ const { status } = require("./status");
 const { addPockets, removePockets, modifyPockets } = require("./pockets/managePockets");
 const { equipPockets, unequipPockets } = require("./pockets/equipPockets");
 const { transferItem } = require("./pockets/manageItems");
-const { progress } = require("./progress")
+const { progress } = require("./progress");
+const { cubeToInventory } = require("./cube/addCube")
 
 
 module.exports = {
@@ -26,5 +27,6 @@ module.exports = {
   unequipPockets,
   modifyPockets,
   transferItem,
-  progress
+  progress,
+  cubeToInventory
 }

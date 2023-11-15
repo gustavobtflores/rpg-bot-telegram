@@ -87,11 +87,11 @@ async function equipPockets(conversation, ctx) {
       await deleteItem("characters", CHARACTERS);
       });
 
-    await ctx.editMessageText(`Compartimentos removidos do inventário do ${authorCharacter.name}.`, {
+    await ctx.editMessageText(`Compartimentos desequipados do inventário do ${authorCharacter.name}.`, {
       reply_markup: blank,
       message_id: res.update.callback_query.message.message_id });
   } else {
-    await ctx.editMessageText("Ok, então não vou equipr nada.\n\nQuer tentar de novo?", { reply_markup: confirmPockets, message_id: res.update.callback_query.message.message_id });
+    await ctx.editMessageText("Ok, então não vou equipar nada.\n\nQuer tentar de novo?", { reply_markup: confirmPockets, message_id: res.update.callback_query.message.message_id });
     res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
     if (res.match === "yes") {

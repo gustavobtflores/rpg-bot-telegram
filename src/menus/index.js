@@ -14,7 +14,7 @@ const statusMenuRange = new MenuRange()
       if (P[4].has("status")) {
         await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, true, "status")}ˆˆEstes são os seus status por enquantoˆˆ`);
       } else {
-        await ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+        await ctx.editMessageText("Você escolheu ver o seu progresso! Escolha o que quer fazer.");
       }
     })
   .text( 

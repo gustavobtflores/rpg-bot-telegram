@@ -117,6 +117,76 @@ function extractItemsFromPockets(objectItems){
 }
 
 
+function getCommonPockets(inventory, item) {
+  const pockets = [];
+  
+  for (const objeto of inventory) {
+    if (objeto.name === item && !pockets.includes(objeto.pocket)) {
+      pockets.push(objeto.pocket);
+    }
+  }
+  
+  return pockets;
+}
+
+
+function splitItemQuant(item) {
+  var itemQuant = [];
+  var itemString = [];
+  for (let i = 1; i <= item.quantity; i++) {
+    var numero = i.toString();
+    itemQuant.push([numero, numero]);
+    itemString.push(numero);
+  }
+
+  var buttonRow = itemQuant.map(([label, data]) => InlineKeyboard.text(label, data));
+
+  const tamanhoDoGrupo = calcularX(itemString.length);
+  const arrayDividida = [];
+
+  for (let i = 0; i < buttonRow.length; i += tamanhoDoGrupo) {
+    const grupo = buttonRow.slice(i, i + tamanhoDoGrupo);
+    arrayDividida.push(grupo);
+  }
+  const InlineNumbers = InlineKeyboard.from(arrayDividida);
+
+  return { InlineNumbers, itemString };
+}
+
+function calcularX(tamanhoArray) {
+  switch (true) {
+    case tamanhoArray <= 8:
+      return 8;
+    case tamanhoArray <= 10:
+      return 5;
+    case tamanhoArray <= 12:
+      return 6;
+    case tamanhoArray <= 14:
+      return 7;
+    case tamanhoArray <= 16:
+      return 8;
+    case tamanhoArray <= 18:
+      return 6;
+    case tamanhoArray <= 21:
+      return 7;
+    case tamanhoArray <= 24:
+      return 8;
+    case tamanhoArray <= 28:
+      return 7;
+    case tamanhoArray <= 32:
+      return 8;
+    case tamanhoArray <= 35:
+      return 7;
+    case tamanhoArray <= 40:
+      return 8;
+    default:
+      // Se o tamanho for maior do que 40, você pode lidar com isso de acordo com sua lógica.
+      // Aqui, está retornando 8, mas você pode ajustar conforme necessário.
+      return 8;
+  }
+}
+
+
 module.exports = {
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
@@ -128,5 +198,7 @@ module.exports = {
   playersID,
   P,
   splitPocketQuant,
-  extractItemsFromPockets
+  extractItemsFromPockets,
+  splitItemQuant,
+  getCommonPockets
 };
