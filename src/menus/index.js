@@ -74,19 +74,19 @@ const rodape = new MenuRange()
 const menuHelp = new Menu("menu-help")
   .text("❎", (ctx) => ctx.deleteMessage());
 
-async function recoverPvPf(idStats, ctx){
+async function recoverPvPf(idStatus, ctx){
   
   const CHARS = await catchItem("characters");
 
-  await idStats.forEach((value, i) => {
+  await idStatus.forEach((value, i) => {
       const char = CHARS.find(id => id.name === value);
-      if(!P[4].has("mana") && char.status.pvAtual !== char.status.pvMax && char.status.pfAtual !== char.status.pfMax) {  
+      if(!P[4].has("mana") && (char.status.pvAtual !== char.status.pvMax || char.status.pfAtual !== char.status.pfMax)) {
         
         if(char.status.notifications){
           const modPv = char.status.pvMax !== char.status.pvAtual ? `\nPV (${char.status.pvMax}): ${char.status.pvAtual} => ${char.status.pvMax}`:"";
           const modPf = char.status.pfMax !== char.status.pfAtual ? `\nPF (${char.status.pfMax}): ${char.status.pfAtual} => ${char.status.pfMax}`: "";
           
-          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> ${desc[i]}\n${modPv}${modPf}`, { chat_id: parseInt(char.id)});
+          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> Recuperação total PV e PF\n${modPv}${modPf}`, { chat_id: parseInt(char.id)});
         }
         char.status.pvAtual = char.status.pvMax;
         char.status.pfAtual = char.status.pfMax;
@@ -599,7 +599,6 @@ const changeStatus = new Menu("dynamic")
     const CHARS1 = await catchItem("characters");
     const authorCharacter = CHARS1.find(char => char.name.toLowerCase() === idStatus[n].toLowerCase());
     for(let i = 0; i<statusName.length ;i++){
-      console.log(idStatus)
       range
         .text(`${statusName[i]}: ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
         .text("-3", (ctx) => {
