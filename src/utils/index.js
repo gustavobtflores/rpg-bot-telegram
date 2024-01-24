@@ -13,8 +13,7 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   //   value.progress = "";
   //   }
   // });
-  CHARACTERS1 = 3;
-  deleteItem("characters", CHARACTERS1);
+  // deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
     if(fun === "xp"){
