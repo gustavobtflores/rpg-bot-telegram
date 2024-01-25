@@ -158,6 +158,8 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   let pocketRemoved = [];
   let parsedItem;
   const flagModify = true;
+  const chatID = ctx.update.callback_query.message.chat.id;
+  
   
   
   for (let itemToRemove of inventoryList) {
