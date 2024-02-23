@@ -8,12 +8,12 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   let totalWeightAllPockets;
   
   // CHARACTERS1.map(value =>{
-  //   if(value.id !== "cube"){
+ //   if(value.id !== "cube"){
     
-  //   value.progress = "";
-  //   }
-  // });
-  // deleteItem("characters", CHARACTERS1);
+ //    value.lastModified = "";
+  //  }
+  //});
+  //deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
     if(fun === "xp"){
