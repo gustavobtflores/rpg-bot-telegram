@@ -1,6 +1,6 @@
 const { InlineKeyboard } = require("grammy");
 const { deleteItem, saveItem, catchItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant } = require("..");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant } = require("..");
 const { getFormattedCharacters } = require("../../utils");
 
 async function cubeToInventory(conversation, ctx) {
@@ -135,7 +135,7 @@ async function cubeToInventory(conversation, ctx) {
           authorCharacter.items[index].quantity += item.quantity;
         });
       }
-      
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Transferiu do cubo";
       await saveItem("characters", CHARACTERS);
       
     });

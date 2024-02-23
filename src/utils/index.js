@@ -74,7 +74,7 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
       return `Peso em ${pocket}: ${totalWeight}kg`;
       }).join("\n\n");
       
-      return ` - ${character.name}${character.id !== "cube" ? `\n\n${pocketsInfo}` : ``}` + `\n\n-> Peso total: ${totalWeightAllPockets}Kg <-\n\n---------------------\n`;
+      return ` - ${character.name}${character.id !== "cube" ? `\n\n${pocketsInfo}` : ``}` + `\n\n-> Peso total: ${totalWeightAllPockets}Kg <-${character.id !== "cube" ? `\n"${character.lastModified}"` : ``}\n\n---------------------\n`;
     } else if (authorId === character.id) {
       let pocketsInfo;
       if (fun === "pockets"){
@@ -105,7 +105,7 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
         return `Itens em "${pocket}" (${totalWeight}Kg):\n\n${itemList}\n\n---------------------\n`;
       });
       
-      pocketsInfo.push(`Peso total: ${totalWeightAllPockets}Kg\n\n`);
+      pocketsInfo.push(`Peso total: ${totalWeightAllPockets}Kg${character.id !== "cube" ? `\n"${character.lastModified}"` : ``}\n\n `);
         
       }
       

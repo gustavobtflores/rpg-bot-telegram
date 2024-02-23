@@ -54,6 +54,8 @@ mainMenu.register(xpMenu);
 bot.use(menuHelp);
 
 
+
+
 bot.command("start", async (ctx) => {
   deleteP(9);
   if (ctx.update.message.from.id === 744974273) {

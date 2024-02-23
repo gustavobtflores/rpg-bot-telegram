@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets } = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { saveItem, deleteItem, catchItem } = require("../../config/storage");
 
@@ -7,14 +7,18 @@ const { saveItem, deleteItem, catchItem } = require("../../config/storage");
 async function transferItem(conversation, ctx) {
   let ID;
   let chatID
+  let modifiedDate;
   
   try{
     ID = ctx.update.callback_query.from.id;
     chatID = ctx.update.callback_query.message.chat.id;
+    modifiedDate = ctx.update.callback_query.message.date;
+    
   }
   catch(err){
     ID = ctx.update.message.from.id;
     chatID = ctx.update.message.chat.id;
+    modifiedDate = ctx.update.message.date;
   }
   const CHARACTERS = await catchItem("characters");
   const blank = new InlineKeyboard();
@@ -111,13 +115,11 @@ async function transferItem(conversation, ctx) {
     await conversation.external(async () => {
       
       for (const itemToRemove of listItemRemove.remove) {
-        // console.log(enter, itemToRemove);
         
         const index = authorCharacter.items.findIndex((item) => {
           return item.name === itemToRemove.name && item.pocket === itemToRemove.pocket;
           });
           
-        console.log(enter, authorCharacter.items[index],enter, itemToRemove);
         if (index !== -1) {
           if (authorCharacter.items[index].quantity !== 1) {
             if (itemToRemove.quantity === authorCharacter.items[index].quantity) {
@@ -157,6 +159,7 @@ async function transferItem(conversation, ctx) {
           authorCharacter.items[index].quantity += item.quantity;
         });
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(modifiedDate) + " }-> Transferiu item";
       
       await saveItem("characters", CHARACTERS);
       

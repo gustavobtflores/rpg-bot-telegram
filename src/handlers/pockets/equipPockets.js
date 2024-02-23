@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem, deleteItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P} = require('../../handlers');
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P} = require('../../handlers');
 const { getFormattedCharacters } = require("../../utils");
 
 async function equipPockets(conversation, ctx) {
@@ -84,6 +84,7 @@ async function equipPockets(conversation, ctx) {
         }
         i++;
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Equipou compartimento";
       await deleteItem("characters", CHARACTERS);
       });
 
@@ -176,6 +177,7 @@ async function unequipPockets(conversation, ctx){
         }
         i++;
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Desequipou compartimento";
       await deleteItem("characters", CHARACTERS);
       });
 

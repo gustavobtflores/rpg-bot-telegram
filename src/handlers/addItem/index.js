@@ -2,7 +2,7 @@ const { conversations, createConversation, } = require("@grammyjs/conversations"
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem } = require("../../config/storage");
 const { getFormattedCharacters } = require("../../utils");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, splitPocketQuant} = require('../../handlers');
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, splitPocketQuant} = require('../../handlers');
 
 const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*$/;
 
@@ -13,13 +13,16 @@ async function addItem(conversation, ctx, cube) {
   let tempCube = cube;
   let equipped;
   let pocketToStore;
+  let modifiedDesc;
   if (cube === true) {
     ID = "cube";
     tempCube = cube;
     equipped = true;
+    modifiedDesc = "Adicionou item no cubo";
   } else {
     ID = ctx.update.callback_query.from.id;
     tempCube = false;
+    modifiedDesc = "Adicionou item no inventário";
   }
 
   const CHARACTERS = await catchItem("characters");
@@ -142,6 +145,7 @@ async function addItem(conversation, ctx, cube) {
           authorCharacter.items[index].quantity += item.quantity;
         });
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> " + modifiedDesc;
       await saveItem("characters", CHARACTERS);
     });
 

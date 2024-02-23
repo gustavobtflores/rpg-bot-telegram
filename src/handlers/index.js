@@ -186,6 +186,23 @@ function calcularX(tamanhoArray) {
   }
 }
 
+function formatDateToCustomFormat() {
+  const now = new Date();
+
+  // Extract date components
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = now.getFullYear();
+
+  // Extract time components
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  // Combine date and time
+  const formattedDate = `${hours}h${minutes}m - ${day}/${month}/${year}`;
+  return formattedDate;
+}
+
 
 module.exports = {
   handleChatTypeResponse,
@@ -200,5 +217,6 @@ module.exports = {
   splitPocketQuant,
   extractItemsFromPockets,
   splitItemQuant,
-  getCommonPockets
+  getCommonPockets,
+  formatDateToCustomFormat
 };

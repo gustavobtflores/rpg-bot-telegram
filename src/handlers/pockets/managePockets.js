@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem, deleteItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, extractItemsFromPockets} = require('../../handlers');
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, extractItemsFromPockets} = require('../../handlers');
 const { getFormattedCharacters } = require("../../utils");
 
 
@@ -99,6 +99,7 @@ async function addPockets(conversation, ctx) {
           authorCharacter.pockets.push(item);
         }
       });
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Adicionou compartimento";
       saveItem("characters", CHARACTERS);
     });
 
@@ -182,7 +183,6 @@ async function removePockets(conversation, ctx) {
   const pocketsList = await extractInventoryItemsFromMessage(message.text, flagPockets);
   var pocketsNow = authorCharacter.pockets.map((item) => item);
   
-  console.log(pocketsList);
   
   for (let pocketToRemove of pocketsList) {
     var item = pocketsNow.find((item) => item.name.toLowerCase() === pocketToRemove.toLowerCase());
@@ -203,7 +203,6 @@ async function removePockets(conversation, ctx) {
     modPocketsList.push(item);
   }
   const itemsByPocket = extractItemsFromPockets(equipped === true ? authorCharacter.items.filter(item => item.equipped) :  authorCharacter.items.filter(item => !item.equipped));
-  console.log(itemsByPocket);
   
   if(deleteItems.match === "Delete"){
   
@@ -225,7 +224,6 @@ async function removePockets(conversation, ctx) {
       { reply_markup: confirmPockets }
     );
   }
-  console.log(modPocketsList);
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
   
   
@@ -255,6 +253,7 @@ async function removePockets(conversation, ctx) {
           }
           
         });
+        authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Removeu compartimento";
       await deleteItem("characters", CHARACTERS);
     });
 
@@ -393,6 +392,7 @@ async function modifyPockets(conversation, ctx) {
         }
         i++;
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> Modificou compartimento";
       await deleteItem("characters", CHARACTERS);
     });
 

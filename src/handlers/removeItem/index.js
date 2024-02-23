@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P, splitItemQuant, getCommonPockets, splitPocketQuant, } = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P, splitItemQuant, getCommonPockets, splitPocketQuant, } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
@@ -8,13 +8,16 @@ async function removeItem(conversation, ctx, cube) {
   let ID = "";
   let tempCube = cube;
   let equipped;
+  let modifiedDesc;
   if (cube === true) {
     ID = "cube";
     tempCube = cube;
     equipped = true;
+    modifiedDesc = "Removeu item do cubo";
   } else {
     ID = ctx.update.callback_query.from.id;
     tempCube = false;
+    modifiedDesc = "Removeu item do inventário";
   }
   
   const CHARACTERS = await catchItem("characters");
@@ -99,6 +102,7 @@ async function removeItem(conversation, ctx, cube) {
           }
         }
       }
+      authorCharacter.lastModified = formatDateToCustomFormat(ctx.update.callback_query.message.date) + " }-> " + modifiedDesc;
       await deleteItem("characters", CHARACTERS);
     });
 
