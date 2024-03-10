@@ -8,12 +8,12 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
   let totalWeightAllPockets;
   
   // CHARACTERS1.map(value =>{
- //   if(value.id !== "cube"){
+  //  if(value.id !== "cube"){
     
- //    value.lastModified = "";
+  //   value.status.lastModified = "";
   //  }
-  //});
-  //deleteItem("characters", CHARACTERS1);
+  // });
+  // deleteItem("characters", CHARACTERS1);
   
   const formatCharacter = (character) => {
     if(fun === "xp"){
@@ -31,13 +31,13 @@ const getFormattedCharacters = async (ID, equipped, fun, allPockets) => {
     }else if(fun === "status"){
       //  aqui equipped === true indica que é apenas para o personagem, se for false é pro mestre
       if(!equipped && character.id !== playersID.Mestre && character.id !== playersID.Rowan && character.id !== playersID.Cubo){
-        var stats = ` - ${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nÚltimos acontecimentos:\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : `-> ${log}.`
+        var stats = ` - ${character.name}:\n\nPV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\nÚltimos acontecimentos (${character.status.lastModified}):\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : `-> ${log}.`
         ).join(";\n")}`
         
       return `${stats}\n\n---------------------\n`;
       
       }else if(character.id === authorId){
-        var stats = `PV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\n\nÚltimos acontecimentos:\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : ` -> ${log}.`
+        var stats = `PV (${character.status.pvMax}) = ${character.status.pvAtual}    |    PF (${character.status.pfMax}) = ${character.status.pfAtual}    |    PM (${character.status.pmMax}) = ${character.status.pmAtual}\n\nÚltimos acontecimentos (${character.status.lastModified}):\n\n${character.status.log.map((log, i, array) => i < (array.length - 1) ? ` - ${log}` : ` -> ${log}.`
         ).join(";\n")}`
         
       return `${stats}\n\n`;

@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { deleteItem, catchItem } = require("../../config/storage");
-const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidStatusItem, limitarCasasDecimais, parseItemFromInventoryString, statusValue, P } = require('../../handlers');
+const { handleChatTypeResponse, extractInventoryItemsFromMessage, isValidStatusItem, limitarCasasDecimais, parseItemFromInventoryString, statusValue, P, formatDateToCustomFormat } = require('../../handlers');
 
 async function status(conversation, ctx){
   const CHARACTERS = await catchItem("characters");
@@ -9,6 +9,7 @@ async function status(conversation, ctx){
   const confirmStatus = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
   const blank = new InlineKeyboard();
   const flagStatus = true;
+  const modifiedDate = ctx.update.callback_query.message.date;
   
   let enter = "\n\n\n\n\n\n\n\n";
   
@@ -96,6 +97,7 @@ async function status(conversation, ctx){
           char.status.log.shift();
         }
         
+        char.status.lastModified = formatDateToCustomFormat(modifiedDate);
       
       });
       await deleteItem("characters", CHARACTERS);

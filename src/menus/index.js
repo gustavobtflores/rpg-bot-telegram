@@ -77,8 +77,11 @@ const menuHelp = new Menu("menu-help")
 async function recoverPvPf(idStatus, ctx){
   
   const CHARS = await catchItem("characters");
+  
+  const modifiedDate = ctx.update.callback_query.message.date;
 
   await idStatus.forEach((value, i) => {
+    
       const char = CHARS.find(id => id.name === value);
       if(!P[4].has("mana") && (char.status.pvAtual !== char.status.pvMax || char.status.pfAtual !== char.status.pfMax)) {
         
@@ -95,8 +98,28 @@ async function recoverPvPf(idStatus, ctx){
       if(char.status.log.length > 5){
           char.status.log.shift();
       }
+      
+      char.status.lastModified = formatDateToCustomFormat(modifiedDate);
+
   });
   await deleteItem("characters", CHARS);
+}
+
+function formatDateToCustomFormat() {
+  const now = new Date();
+
+  // Extract date components
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = now.getFullYear();
+
+  // Extract time components
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  // Combine date and time
+  const formattedDate = `${hours}h${minutes}m - ${day}/${month}/${year}`;
+  return formattedDate;
 }
 
 const P = [
@@ -293,7 +316,26 @@ const pocketsMenu = new Menu("pockets-menu")
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("unequip-pockets");
   });
-  
+
+const transferMenu = new Menu("transfer-menu")
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
+  })
+  .text("Inventário principal", async (ctx) => {
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("transfer-item");
+  })
+  .row()
+  .text("Cubo:")
+  .text("Inv ➡️ Cubo", async (ctx) =>{
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("invCube");
+  })
+  .text("Cubo ➡️ Inv", async (ctx) =>{
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("cubeInv");
+  });
   
 const cubeMenu = new Menu("cube-menu")
   .back("⏪ Voltar", async (ctx) => {
@@ -324,6 +366,16 @@ const cubeMenu = new Menu("cube-menu")
   .text("Modificar itens", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-cube");
+  })
+  .row()
+  .text("Transferir:")
+  .text("Inv ➡️ Cubo", async (ctx) =>{
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("invCube");
+  })
+  .text("Cubo ➡️ Inv", async (ctx) =>{
+    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
+    await ctx.conversation.enter("cubeInv");
   });
 
 const itemModifyMenu = new Menu("item-modify-menu")
@@ -707,5 +759,6 @@ module.exports = {
   idStatus,
   progressMenu,
   statusMenu,
-  xpMenu
+  xpMenu,
+  transferMenu
 };

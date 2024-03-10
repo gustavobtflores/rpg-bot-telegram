@@ -1,7 +1,7 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
-const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress, cubeToInventory } = require("./handlers/imports");
-const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus, progressMenu, xpMenu, statusMenu } = require("./menus");
+const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress, invCube, cubeInv } = require("./handlers/imports");
+const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus, progressMenu, xpMenu, statusMenu, transferMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 const { catchItem, deleteItem } = require("./config/storage");
 const { InlineKeyboard } = require("grammy");
@@ -28,7 +28,8 @@ bot.use(createConversation(equipPockets,"equip-pockets"));
 bot.use(createConversation(unequipPockets,"unequip-pockets"));
 bot.use(createConversation(transferItem,"transfer-item"));
 bot.use(createConversation(progress,"progress"));
-bot.use(createConversation(cubeToInventory, "cube-to-inventory"));
+bot.use(createConversation(cubeInv, "cubeInv"));
+bot.use(createConversation(invCube, "invCube"))
 
 
 bot.use(DgMMenu);
@@ -49,6 +50,7 @@ mainMenu.register(inventoryMenu);
 mainMenu.register(pocketsMenu);
 mainMenu.register(statusMenu);
 mainMenu.register(xpMenu);
+mainMenu.register(transferMenu);
 
 
 bot.use(menuHelp);
@@ -91,7 +93,8 @@ bot.command("equip", async (ctx) => {
 
 bot.command("transferir", async (ctx) => {
   deleteP(9);
-  await ctx.conversation.enter("transfer-item");
+  await ctx.reply("Vocẽ escolheu transferir itens! Escolha da onde", { reply_markup: transferMenu });
+
 });
 
 bot.command("status", async (ctx) => {
@@ -110,7 +113,7 @@ bot.command("help", async (ctx) => {
   if(ctx.update.message.chat.type === "private"){
     await ctx.deleteMessage()
   }
-  await ctx.reply("*Boas vindas e não temas\\! Este breve guia vem para ajudar a sanar suas dúvidas de forma clara e rápida\\!*\n\n/start \\-\\> Menu principal, por onde pode acessar todas as funções em menus navegáveis\\.\n/adicionar \\-\\> Adiciona itens ou compartimentos, se o item que estiver tentando adicionar já for existente no seu inventário ele será somado\\.\n/remover \\-\\> Remove itens ou compartimentos, ao remover item será questionado _quantos quer remover_ se houver mais de um daquele item, ao remover compartimentos é possível _remover todos os itens_ que estão naquele compartimento, o que é bastante útil se você pensar em criar um compartimento chamado lixeira, transferir todos os itens para lá e então de tempos em tempos remover todos de uma vez só\\!\n/modificar \\-\\> Modifica itens ou compartimentos\\. Permite modificar todas as propriedades dos itens e dos compartimentos, lembrando que todas as aterações feitas no compartimento afetarão também os itens que estão contidos nele\\.\n/listar \\-\\> Lista todos os itens equipados ou desequipados, acessando o menu compartimentos, porém, você é capaz de ver os compartimentos que estão vazios, ou seja, sem itens\\.\n/equip \\-\\> Desequipa compartimentos, bastante útil na hora que precisar desequipar ou equipar vários itens de uma vez só, ou seja, quando desequipa um compartimento, por exemplo, _todos os itens que pertencem aquele compartimento também serão desequipados_, então numa situação onde você estã com uma mochila nas costas você pode se livrar daquele peso todo de uma vez\\!\n/status \\-\\> Lista os status atuais, além de poder alterar as notificações do mesmo\\. Mostra como está seu personagem indicando quais foram os últimos acontecimentos aconteceram com seu personagem\\.\n/transferir \\-\\> Transfere seus itens para qualquer compartimento\\. Com isso, você é capaz de desequipar ou equipar itens individualmente ou em grupos, transferindo para qualquer compartimento desejado\\.\n/progresso \\-\\> Lista ou modifica seu progresso, sendo de maior importância *listar as habilidades que você tem alguma XP ou hora de aprendizagem*, mas pode conter também outras Informações como pontos na carteira ou nomes de professores ou lugares\\.\n\nLembrando que itens *DESEQUIPADOS* significam que são itens que não estão com você\\! Logo, estes itens não constaram na lista de itens do mestre, então fique atento para isso\\.", {reply_markup: menuHelp, parse_mode: "MarkdownV2"});
+  await ctx.reply("*Boas vindas e não temas\\! Este breve guia vem para ajudar a sanar suas dúvidas de forma clara e rápida\\!*\n\n/start \\-\\> Menu principal, por onde pode acessar todas as funções em menus navegáveis\\.\n/adicionar \\-\\> Adiciona itens ou compartimentos, se o item que estiver tentando adicionar já for existente no seu inventário ele será somado\\.\n/remover \\-\\> Remove itens ou compartimentos, ao remover item será questionado _quantos quer remover_ se houver mais de um daquele item, ao remover compartimentos é possível _remover todos os itens_ que estão naquele compartimento, o que é bastante útil se você pensar em criar um compartimento chamado lixeira, transferir todos os itens para lá e então de tempos em tempos remover todos de uma vez só\\!\n/modificar \\-\\> Modifica itens ou compartimentos\\. Permite modificar todas as propriedades dos itens e dos compartimentos, lembrando que todas as aterações feitas no compartimento afetarão também os itens que estão contidos nele\\.\n/listar \\-\\> Lista todos os itens equipados ou desequipados, acessando o menu compartimentos, porém, você é capaz de ver os compartimentos que estão vazios, ou seja, sem itens\\.\n/equip \\-\\> Desequipa compartimentos, bastante útil na hora que precisar desequipar ou equipar vários itens de uma vez só, ou seja, quando desequipa um compartimento, por exemplo, _todos os itens que pertencem aquele compartimento também serão desequipados_, então numa situação onde você estã com uma mochila nas costas você pode se livrar daquele peso todo de uma vez\\!\n/status \\-\\> Lista os status atuais, além de poder alterar as notificações do mesmo\\. Mostra como está seu personagem indicando quais foram os últimos acontecimentos aconteceram com seu personagem\\.\n/transferir \\-\\> Transfere seus itens para qualquer compartimento do inventário principal ou entre o cubo e o inventário\\. Com isso, você é capaz de desequipar ou equipar itens individualmente ou em grupos, transferindo para qualquer compartimento desejado\\.\n/progresso \\-\\> Lista ou modifica seu progresso, sendo de maior importância *listar as habilidades que você tem alguma XP ou hora de aprendizagem*, mas pode conter também outras Informações como pontos na carteira ou nomes de professores ou lugares\\.\n\nLembrando que itens *DESEQUIPADOS* significam que são itens que não estão com você\\! Logo, estes itens não constaram na lista de itens do mestre, então fique atento para isso\\.", {reply_markup: menuHelp, parse_mode: "MarkdownV2"});
 });
 
 
