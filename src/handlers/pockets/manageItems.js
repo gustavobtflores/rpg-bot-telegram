@@ -44,7 +44,6 @@ async function transferItem(conversation, ctx) {
   await ctx.editMessageText(`Estes são seus itens no momento:\n${await getFormattedCharacters(authorId, equipped)}\nEscolha quais itens quer transferir separando-os por , ou enter.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id});
 
   const { message } = await conversation.wait();
-  console.log(message);
 
   var inventoryList = extractInventoryItemsFromMessage(message.text, flagChoose);
   var inventoryNow = authorCharacter.items.map((item) => item);

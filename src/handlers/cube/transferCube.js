@@ -80,7 +80,6 @@ async function transferCube(conversation, ctx, fun) {
   }
   
   const listItemRemove = await transferItemDefine(inventoryList, fun === "invCube" ? inventoryNow : inventoryCube, fun !== "invCube" ? inventoryNow : inventoryCube, pocketToStore, ctx, conversation, fun);
-  console.log(listItemRemove);
   
   if (listItemRemove.modList.length === 0) {
     await ctx.reply(`Estes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${listItemRemove.nonAdd.map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`).join("\n\n")}\n\nPeso total a ser transferido: ${limitarCasasDecimais(listItemRemove.nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0), 3)}Kg - Confirma?`, {
