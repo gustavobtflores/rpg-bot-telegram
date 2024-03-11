@@ -19,7 +19,7 @@ async function equipPockets(conversation, ctx) {
   }
 
   await ctx.reply(
-    `Você escolheu equipar um compartimento!\n${await getFormattedCharacters(ID, false, "pockets")}\n\nDigite o nome do compartimento, podendo escolher mais de um separando por , ou enter. Lembrando que todos os itens pertencentes ao compartimento escolhido serão todos equipados juntos!`
+    `Você escolheu equipar um compartimento!\n${await getFormattedCharacters(ID, false, "pockets", true)}\n\nDigite o nome do compartimento, podendo escolher mais de um separando por , ou enter. Lembrando que todos os itens pertencentes ao compartimento escolhido serão todos equipados juntos!`
   );
 
   const { message } = await conversation.wait();
@@ -75,11 +75,14 @@ async function equipPockets(conversation, ctx) {
         for (const item of authorCharacter.items){
           if (item.pocket.toLowerCase() === pocketToEquip.name.toLowerCase()){
             item.equipped = true;
+            if(pocketToEquip.name.toLowerCase() === "chão"){
+              item.pocket = "Corpo";
+            }
           }
         }
         
         const index = authorCharacter.pockets.findIndex((item) => item.name.toLowerCase() === pocketsList[i].toLowerCase());
-        if (index !== -1) {
+        if (index !== -1 && pocketsList[i].toLowerCase() !== "chão") {
             authorCharacter.pockets[index].equipped = true;
         }
         i++;
@@ -88,7 +91,7 @@ async function equipPockets(conversation, ctx) {
       await deleteItem("characters", CHARACTERS);
       });
 
-    await ctx.editMessageText(`Compartimentos desequipados do inventário do ${authorCharacter.name}.`, {
+    await ctx.editMessageText(`Compartimentos equipados do inventário do ${authorCharacter.name}.`, {
       reply_markup: blank,
       message_id: res.update.callback_query.message.message_id });
   } else {
@@ -120,7 +123,7 @@ async function unequipPockets(conversation, ctx){
     return;
   }
   ctx.reply(
-    `Você escolheu desequipar um compartimento!\n${await getFormattedCharacters(authorId, true, "pockets")}\n\nDigite o nome do compartimento, podendo escolher mais de um separando por , ou enter. Lembrando que todos os itens pertencentes ao compartimento escolhido serão todos desequipados juntos!`
+    `Você escolheu desequipar um compartimento!\n${await getFormattedCharacters(authorId, true, "pockets", true)}\n\nDigite o nome do compartimento, podendo escolher mais de um separando por , ou enter. Lembrando que todos os itens pertencentes ao compartimento escolhido serão todos desequipados juntos!`
   );
   const { message } = await conversation.wait();
 
@@ -166,13 +169,16 @@ async function unequipPockets(conversation, ctx){
       for (let pocketToEquip of listPocketsUnequip) {
         
         for (const item of authorCharacter.items){
-          if (item.pocket === pocketToEquip.name){
+          if (item.pocket.toLowerCase() === pocketToEquip.name.toLowerCase()){
             item.equipped = false;
+            if(pocketToEquip.name.toLowerCase() === "corpo"){
+              item.pocket = "Chão";
+            }
           }
         }
         
         const index = authorCharacter.pockets.findIndex((item) => item.name.toLowerCase() === pocketsList[i].toLowerCase());
-        if (index !== -1) {
+        if (index !== -1 && pocketsList[i].toLowerCase() !== "corpo") {
             authorCharacter.pockets[index].equipped = false;
         }
         i++;
