@@ -27,7 +27,7 @@ async function transferCube(conversation, ctx, fun) {
   }
   
   if(fun !== "invCube"){ // entra aqui quando for do CUBO para o INVENTARIO ;;;;;;; cubo => inventario
-    await ctx.reply(`Você quer transferir os itens para que tipo de compartimento?`, {reply_markup: confirmPocket});
+    await ctx.reply(`Você quer ENVIAR os itens do cubo para que tipo de compartimento do inventário?`, {reply_markup: confirmPocket});
     
     var pocketType = await conversation.waitForCallbackQuery(["equipped","unequipped"]);
     equippedPocket = pocketType.match === "equipped" ? true : false ;
@@ -35,7 +35,7 @@ async function transferCube(conversation, ctx, fun) {
       
     const quant = await splitPocketQuant(pocket);
       
-    await ctx.editMessageText(`Escolha para qual compartimento quer transferir os itens: \n\n${await getFormattedCharacters(authorId, equippedPocket, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
+    await ctx.editMessageText(`Escolha para qual compartimento quer ENVIAR os itens: \n\n${await getFormattedCharacters(authorId, equippedPocket, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
       
     var res = await conversation.waitForCallbackQuery(quant.itemString);
     pocketToStore = res.match;
@@ -44,7 +44,7 @@ async function transferCube(conversation, ctx, fun) {
 
   }else{ // entra aqui quando for do INVENTARIO para o CUBO  ;;;;;;;;;; inventario => cubo
 
-    await ctx.reply(`Escolha que tipo de itens quer transferir para o cubo.`, {reply_markup: confirmPocket});
+    await ctx.reply(`Escolha que tipo de itens quer RETIRAR do inventário para o cubo.`, {reply_markup: confirmPocket});
     
     var res = await conversation.waitForCallbackQuery(["equipped", "unequipped"]);
 
@@ -79,7 +79,8 @@ async function transferCube(conversation, ctx, fun) {
     }
   }
   
-  const listItemRemove = await transferItemDefine(inventoryList, fun === "invCube" ? inventoryNow : inventoryCube, pocketToStore, ctx, conversation, fun);
+  const listItemRemove = await transferItemDefine(inventoryList, fun === "invCube" ? inventoryNow : inventoryCube, fun !== "invCube" ? inventoryNow : inventoryCube, pocketToStore, ctx, conversation, fun);
+  console.log(listItemRemove);
   
   if (listItemRemove.modList.length === 0) {
     await ctx.reply(`Estes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${listItemRemove.nonAdd.map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`).join("\n\n")}\n\nPeso total a ser transferido: ${limitarCasasDecimais(listItemRemove.nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0), 3)}Kg - Confirma?`, {
@@ -151,7 +152,7 @@ async function transferCube(conversation, ctx, fun) {
           let index = -1;
 
           for (let j = 0; j < inventoryAdd.items.length; j++) {
-            if (inventoryAdd.items[j].name === item.name && authorCharacter.items[j].pocket === pocketToStore) {
+            if (inventoryAdd.items[j].name === item.name && inventoryAdd.items[j].pocket === pocketToStore) {
               index = j;
               break;
             }
@@ -180,7 +181,7 @@ async function transferCube(conversation, ctx, fun) {
     }
   }
 }
-async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation, fun) {
+async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, pocketToStore, ctx, conversation, fun) {
   var modList = [];
   var nonAdd = [];
   var remove = [];
@@ -251,7 +252,7 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, ct
 
       await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
     }
-    const test = inventoryNow.find((index) => {
+    const test = inventoryLater.find((index) => {
       return index.name === itemPocket.name && index.pocket === pocketToStore;
     });
     if(test){

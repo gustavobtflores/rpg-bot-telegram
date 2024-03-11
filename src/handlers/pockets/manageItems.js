@@ -34,30 +34,17 @@ async function transferItem(conversation, ctx) {
   if (!handleChatTypeResponse(authorId, ctx)) {
     return;
   }
-  
-  
-  await ctx.reply(`Você quer transferir os itens para que tipo de compartimento?`, {reply_markup: confirmPocket});
-  
-  var pocketType = await conversation.waitForCallbackQuery(["equipped","unequipped"]);
-  const equippedPocket = pocketType.match === "equipped" ? true : false ;
-  var pocket = [ ...pocketsNow.map((item) => item.equipped === equippedPocket ? item.name : "") ];
-    
-  const quant = await splitPocketQuant(pocket);
-    
-  await ctx.editMessageText(`Escolha para qual compartimento quer transferir os itens: \n\n${await getFormattedCharacters(authorId, equippedPocket, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
-    
-  var res = await conversation.waitForCallbackQuery(quant.itemString);
-  const pocketToStore = res.match;
 
-  await ctx.editMessageText(`Escolha que tipo de itens quer transferir para ${pocketToStore}.`, {reply_markup: confirmPocket, message_id: res.update.callback_query.message.message_id});
+  await ctx.reply(`Escolha da onde você quer RETIRAR os itens.`, {reply_markup: confirmPocket});
   
   var res = await conversation.waitForCallbackQuery(["equipped", "unequipped"]);
 
   let equipped = res.match === "equipped" ? true : false;
 
-  await ctx.editMessageText(`Estes são seus itens no momento:\n${await getFormattedCharacters(authorId, equipped)}\nEscolha quais itens quer transferir para ${pocketToStore} separando-os por , ou enter.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id});
+  await ctx.editMessageText(`Estes são seus itens no momento:\n${await getFormattedCharacters(authorId, equipped)}\nEscolha quais itens quer transferir separando-os por , ou enter.`, { reply_markup: blank, message_id: res.update.callback_query.message.message_id});
 
   const { message } = await conversation.wait();
+  console.log(message);
 
   var inventoryList = extractInventoryItemsFromMessage(message.text, flagChoose);
   var inventoryNow = authorCharacter.items.map((item) => item);
@@ -82,6 +69,22 @@ async function transferItem(conversation, ctx) {
     }
   }
   
+  await ctx.reply(`Escolha para que tipo de compartimento quer ENVIAR os itens.`, {reply_markup: confirmPocket});
+  
+  var pocketType = await conversation.waitForCallbackQuery(["equipped","unequipped"]);
+  const equippedPocket = pocketType.match === "equipped" ? true : false ;
+  var pocket = [ ...pocketsNow.map((item) => item.equipped === equippedPocket ? item.name : "") ];
+    
+  const quant = await splitPocketQuant(pocket);
+    
+  await ctx.editMessageText(`Escolha para qual compartimento quer ENVIAR os itens: \n\n${await getFormattedCharacters(authorId, equippedPocket, "pockets", true)}`, {  reply_markup: quant.InlineNumbers , message_id: pocketType.update.callback_query.message.message_id });
+    
+  var res = await conversation.waitForCallbackQuery(quant.itemString);
+  const pocketToStore = res.match;
+
+
+  await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
+
   const listItemRemove = await transferItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation);
   
   if (listItemRemove.modList.length === 0) {

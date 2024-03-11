@@ -322,7 +322,7 @@ const transferMenu = new Menu("transfer-menu")
     deleteP(9);
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
-  .text("Inventário principal", async (ctx) => {
+  .text("🎒 Inventário principal", async (ctx) => {
     ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("transfer-item");
   })
