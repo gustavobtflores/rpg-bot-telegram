@@ -79,6 +79,7 @@ async function modifyItem(conversation, ctx, cube) {
   
   let listItemModify = await modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube);
 
+try{
   await ctx.reply(
     `Confira os itens que quer modificar:\nAntes:\n\n${listItemModify.listItemModify.map((itemMod, i) => {
         const index = authorCharacter.items.findIndex((item) => {
@@ -94,6 +95,7 @@ async function modifyItem(conversation, ctx, cube) {
   );
 
   var res = await conversation.waitForCallbackQuery(["yes", "no"]);
+}catch(err){}
 
   if (res.match === "yes") {
     await conversation.external(async () => {
@@ -224,7 +226,8 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
     if(commomPocket.length !== 0 ) {
   /////////////////////////////////////////////////////////////////////////////
   await ctx.reply(`Você irá modificar o item que está em ${pocketToRemove}:\n\n -> ${itemPocket.name}: ${itemPocket.weight}Kg - ${itemPocket.quantity}Un => ${limitarCasasDecimais(itemPocket.weight * itemPocket.quantity, 3)}Kg\nDescrição: ${itemPocket.desc}
-  \n\nEscreva as alterações que deseja fazer seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nExemplo1:\n escudo, 2, 1, de metal`);
+  \n\nCopie a mensagem seguinte e escreva as alterações que deseja fazer seguindo o modelo:\n\n <nome do item>, <peso>, <quantidade>, <descrição>\n\nExemplo:\n escudo, 2, 1, de metal`);
+  await ctx.reply(`${itemPocket.name}, ${itemPocket.weight}, ${itemPocket.quantity}, ${itemPocket.desc}`)
 
   let { message: modified } = await conversation.wait();
   
