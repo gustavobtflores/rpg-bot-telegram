@@ -58,9 +58,7 @@ const xpMenuRange = new MenuRange()
         }
       }
     })
-  .text("Modificar", async (ctx) =>{
-    await ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
-  
+  .text("Modificar", async (ctx) =>{  
     await ctx.conversation.enter("progress");
   });
   
@@ -180,15 +178,12 @@ const listItemsMenu = new Menu("list-items-menu")
 
 const itemAddMenu = new Menu("item-add-menu")
   .text("Itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-item");
   })
   .text("Compartimentos", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-pockets");
   })
   .text("Cubo", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-cube");
   })
   .dynamic(async () => rodape);
@@ -196,7 +191,12 @@ const itemAddMenu = new Menu("item-add-menu")
 
 const mainMenu = new Menu("main-menu")
   .submenu("Itens", "inventory-menu", async (ctx) => {
-    ctx.editMessageText("Você escolheu o inventário itens! Escolha o que quer fazer");
+    try{
+      ctx.editMessageText("Você escolheu o inventário itens! Escolha o que quer fazer");
+    }catch(err){
+      
+      ctx.reply("Você escolheu o inventário itens! Escolha o que quer fazer");
+    }
   })
   .submenu("Compartimentos", "pockets-menu", async (ctx) =>{
     ctx.editMessageText("Você escolheu o inventário de compartimentos! Escolha o que quer fazer")
@@ -246,15 +246,12 @@ const inventoryMenu = new Menu("inventory-menu")
     })
   .row()
   .text("Adicionar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-item");
   })
   .text("Remover", async (ctx) => {
-    await ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-item");
   })
   .text("Modificar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-item");
   }).row()
   .back("⏪", async (ctx) => {
@@ -262,7 +259,6 @@ const inventoryMenu = new Menu("inventory-menu")
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("Transferir", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("transfer-item");
   });
   
@@ -293,15 +289,12 @@ const pocketsMenu = new Menu("pockets-menu")
     })
   .row()
   .text("Adicionar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-pockets");
   })
   .text("Remover", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-pockets");
   })
   .text("Modificar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-pockets");
   }).row()
   .back("⏪ Voltar", async (ctx) => {
@@ -309,11 +302,9 @@ const pocketsMenu = new Menu("pockets-menu")
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("Equipar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("equip-pockets");
   })
   .text("Desequipar", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("unequip-pockets");
   });
 
@@ -323,17 +314,14 @@ const transferMenu = new Menu("transfer-menu")
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
   .text("🎒 Inventário principal", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("transfer-item");
   })
   .row()
   .text("Cubo:")
   .text("Inv ➡️ Cubo", async (ctx) =>{
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("invCube");
   })
   .text("Cubo ➡️ Inv", async (ctx) =>{
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("cubeInv");
   });
   
@@ -356,65 +344,52 @@ const cubeMenu = new Menu("cube-menu")
     })
   .row()
   .text("Adicionar itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("add-cube");
   })
   .text("Remover itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-cube");
   })
   .text("Modificar itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-cube");
   })
   .row()
   .text("Transferir:")
   .text("Inv ➡️ Cubo", async (ctx) =>{
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("invCube");
   })
   .text("Cubo ➡️ Inv", async (ctx) =>{
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("cubeInv");
   });
 
 const itemModifyMenu = new Menu("item-modify-menu")
   .text("Itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-item");
   })
   .text("Compartimentos", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-pockets");
   })
   .text("Cubo", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("modify-cube");
   })
   .dynamic(async () => rodape);
 
 const itemRemoveMenu = new Menu("item-remove-menu")
   .text("Itens", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-item");
   })
   .text("Compartimentos", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-pockets");
   })
   .text("Cubo", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("remove-cube");
   })
   .dynamic(async () => rodape);
   
 const equipPocketMenu = new Menu("equip-pocket-menu")
   .text("Equipar compartimento", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("equip-pockets");
   })
   .text("Desequipar compartimento", async (ctx) => {
-    ctx.api.deleteMessage(ctx.update.callback_query.message.chat.id, ctx.update.callback_query.message.message_id);
     await ctx.conversation.enter("unequip-pockets");
   })
   .dynamic(async () => rodape);
