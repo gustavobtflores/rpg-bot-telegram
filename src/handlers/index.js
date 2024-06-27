@@ -27,7 +27,11 @@ function extractInventoryItemsFromMessage(text, addRemove) {
 }
 
 function isValidItem(item, ITEM_REGEX) {
-  return ITEM_REGEX.test(item);
+  const parsedItem = extractInventoryItemsFromMessage(item);
+  if(!isNaN(parsedItem[1]) && parsedItem[1].trim() !== ""){
+    return ITEM_REGEX.test(item);
+  }
+  return false;
 }
 
 function limitarCasasDecimais(numero, casasDecimais) {

@@ -9,15 +9,52 @@ const playersID = {
 
 const CHARACTERS = [
   {
-    id: playersID.Mestre,
+    id: playersID.Mestre, // <<<<----- modelo oficial
     name: "Teste",
     level: 100,
     vocation: "Mestre",
     items: [
-      { name: "Espada", weight: 50, quantity: 1, desc: "" },
-      { name: "Escudo", weight: 70, quantity: 1, desc: "" },
-      { name: "Capacete", weight: 30, quantity: 1, desc: "" },
+      { name: "Espada", weight: 50, quantity: 1, desc: "", equipped: true, pocket: "Mochila" },
+      { name: "Escudo", weight: 70, quantity: 1, desc: "", equipped: true, pocket: "Mochila"  },
+      { name: "Capacete", weight: 30, quantity: 1, desc: "", equipped: true, pocket: "Mochila"  },
     ],
+    status: { 
+      pvMax: 19, pfMax: 15, pmMax: 25, pvAtual:9, pfAtual: 10, pmAtual:25, log: ["levou uma lapada","descansou", "até 5 logs"]
+    },
+    notifications: true,
+    lastModified: "hora - data",
+    pockets: [
+      {name: "Corpo", equipped: "true"},
+      {name: "Chão",  equipped: "false"}
+    ],
+    tradeON:[ // aqui estão os pedidos de troca ativos
+      {
+        from:"id1",
+        date: "hora - dia",
+        message: "alguma coisa",
+        items:
+          [
+            { name: "Espada", weight: 50, quantity: 1, desc: ""},
+            { name: "Escudo", weight: 70, quantity: 1, desc: ""},
+            { name: "Capacete", weight: 30, quantity: 1, desc: ""},
+          ],
+      },
+      {
+        from: "id2",
+        date: "hora - dia",
+        message: "alguma coisa",
+        items:
+          [  
+            { name: "Varinha", weight: 25, quantity: 1, desc: ""},
+            { name: "Túnica", weight: 15, quantity: 1, desc: ""},
+            { name: "Amuleto", weight: 5, quantity: 1, desc: ""},
+          ], // até 5 possíveis troca na fila de uma mesma pessoa
+      },
+    ],
+    tradeOFF: [ // aqui estão os pedido de troca inativos
+        // segue igual o tradeON;
+    ]
+
   },
   {
     id: playersID.Tibius,

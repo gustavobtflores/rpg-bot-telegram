@@ -4,7 +4,9 @@ const { saveItem, catchItem } = require("../../config/storage");
 const { getFormattedCharacters } = require("../../utils");
 const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, splitPocketQuant} = require('../../handlers');
 
-const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*$/;
+//const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*$/;
+const ITEM_REGEX = /^\s*.+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*.+$/;
+
 
 async function addItem(conversation, ctx, cube) {
   let enter = "\n\n\n\n\n\n\n\n";
@@ -72,9 +74,18 @@ async function addItem(conversation, ctx, cube) {
   var inventoryNow = authorCharacter.items.map((item) => item);
 
   const inventoryList = await extractInventoryItemsFromMessage(message.text, flagAdd);
+  let inventoryErr = [];
+  let inventoryErrFlag = true;
   for (let itemInInventory of inventoryList) {
     if (!isValidItem(itemInInventory, ITEM_REGEX)) {
-      await ctx.reply(`Houve um problema ao identificar um dos itens, erro foi nesse item aqui: \n\n${itemInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
+      inventoryErr.push(itemInInventory);
+      inventoryErrFlag = false;
+    }
+    const parsedItem = await parseItemFromInventoryString(itemInInventory);
+    await parsedList.push(parsedItem);
+  }
+  if(!inventoryErrFlag){
+    await ctx.reply(`Houve um problema ao identificar um ou mais itens, lista de itens com erro: \n\n${inventoryErr.map(item => " -> " + item).join("\n")}\n\nQuer tentar de novo?`, { reply_markup: confirmAdd });
 
       var res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
@@ -86,11 +97,7 @@ async function addItem(conversation, ctx, cube) {
       }
       return;
     }
-    const parsedItem = await parseItemFromInventoryString(itemInInventory);
-    
-    
-    await parsedList.push(parsedItem);
-  }
+
   inventoryAdd = await addItemDefine(parsedList, inventoryNow, pocketToStore, ctx, conversation);
   
 
