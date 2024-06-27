@@ -4,7 +4,7 @@ const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
 
-const ITEM_REGEX = /^[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ+)(.,-]+,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.+)(,-]+$/;
+const ITEM_REGEX = /^\s*.+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*.+$/;
 
 const confirmModify = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
 const blank = new InlineKeyboard();
