@@ -53,11 +53,19 @@ function parseItemFromInventoryString(itemString, pockets) {
   const itemParts = [...itemSplit.slice(0, 3), itemSplit.slice(3).join(', ')];
   
   if(pockets !== true){
+    try{
   return {
     name: itemParts[0].trim(),
     weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
     quantity: parseFloat(itemParts[2], 10),
     desc: itemParts[3].trim(),
+  }} catch (err) {
+    return {
+      name: itemParts[0].trim(),
+      weight: limitarCasasDecimais(parseFloat(itemParts[1], 10), 3),
+      quantity: parseFloat(itemParts[2], 10),
+      desc: "",
+    }
   };}else{
   let equippedPocket;
   if(itemParts[1].toLowerCase() === "equipado" || itemParts[1].toLowerCase() === "equipada"){
