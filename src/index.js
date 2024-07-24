@@ -72,7 +72,7 @@ bot.command("start", async (ctx) => {
 bot.command("adicionar", async (ctx) => {
   deleteP(9);
   if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
-  await ctx.reply("Você escolheu adicionar um item! Escolha onde", { reply_markup: itemAddMenu });
+  await ctx.reply("Você escolheu adicionar itens ou compartimentos! Escolha qual", { reply_markup: itemAddMenu });
   }
 });
 

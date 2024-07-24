@@ -199,9 +199,6 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
 
-    console.log("bbbbb");
-    console.log("\n\n\n\n\n");
-
     commomPocket = await getCommonPockets(inventoryNow, item.name, equipped);
     const indexCommomPocket = commomPocket.indexOf(pocketToStore);
     if (indexCommomPocket > -1){
@@ -266,7 +263,6 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
       return index.name === itemPocket.name && index.pocket === pocketToStore;
     });
 
-    console.log("aaa");
     if(test){
       
         let sameItemIndex = -1;

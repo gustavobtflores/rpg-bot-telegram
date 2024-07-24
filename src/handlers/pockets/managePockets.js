@@ -5,7 +5,7 @@ const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsF
 const { getFormattedCharacters } = require("../../utils");
 
 
-const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+$/;
+const ITEM_REGEX = /^.+,\s*[a-zA-Z]+$/;
 
 async function addPockets(conversation, ctx) {
   
@@ -37,9 +37,10 @@ async function addPockets(conversation, ctx) {
   const pseudoConfirmPockets = new InlineKeyboard().text("Sim", "yah").text("Não", "nah");
 
   const pocketsList = await extractInventoryItemsFromMessage(message.text, flagPockets);
+
   
   for (let pocketInInventory of pocketsList) {
-    if (!isValidItem(pocketInInventory, ITEM_REGEX)) {
+    if (!isValidItem(pocketInInventory, ITEM_REGEX, flagPockets)) {
       await ctx.reply(`Houve um problema ao identificar um dos compartimentos, erro foi nesse compartimento aqui: \n\n${pocketInInventory}\n\nQuer tentar de novo?`, { reply_markup: confirmPockets });
 
       var res = await conversation.waitForCallbackQuery(["yes", "no"]);

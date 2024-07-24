@@ -27,9 +27,11 @@ function extractInventoryItemsFromMessage(text, addRemove) {
   return text.split(";").map((item) => item.trim());
 }
 
-function isValidItem(item, ITEM_REGEX) {
+function isValidItem(item, ITEM_REGEX, flag) {
   const parsedItem = extractInventoryItemsFromMessage(item);
   if(!isNaN(parsedItem[1]) && parsedItem[1].trim() !== ""){
+    return ITEM_REGEX.test(item);
+  }else if(flag){
     return ITEM_REGEX.test(item);
   }
   return false;
