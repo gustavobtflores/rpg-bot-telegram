@@ -1,6 +1,7 @@
 const { conversations, createConversation } = require("@grammyjs/conversations");
 const { bot } = require("./config/botConfig");
 const { addItem, removeItem, modifyItem, addCube, removeCube, modifyCube, equipItem, unequipItem, status, addPockets, removePockets, equipPockets, unequipPockets, modifyPockets, transferItem, progress, invCube, cubeInv } = require("./handlers/imports");
+const { handleChatTypeResponse } = require("./handlers");
 const { itemRemoveMenu, itemAddMenu, mainMenu, DgMMenu, listPlayersMenu, itemModifyMenu, deleteP, P, listItemsMenu, equipPocketMenu, cubeMenu, inventoryMenu, changeStatus, playerss, statusValue, statusReset, fullRecoverAll, pocketsMenu, menuHelp, idStatus, progressMenu, xpMenu, statusMenu, transferMenu } = require("./menus");
 const { getFormattedCharacters } = require("./utils");
 const { catchItem, deleteItem } = require("./config/storage");
@@ -63,57 +64,74 @@ bot.command("start", async (ctx) => {
   if (ctx.update.message.from.id === 744974273) {
     await statusReset();
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
-  } else {
+  } else if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
     await ctx.reply("Bem vindo ao bot de itens! Que inventário quer usar?", { reply_markup: mainMenu });
   }
 });
 
 bot.command("adicionar", async (ctx) => {
   deleteP(9);
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
   await ctx.reply("Você escolheu adicionar um item! Escolha onde", { reply_markup: itemAddMenu });
+  }
 });
 
 bot.command("remover", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Você escolheu remover um item! Escolha de onde", { reply_markup: itemRemoveMenu });
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Você escolheu remover um item! Escolha de onde", { reply_markup: itemRemoveMenu });
+  }
 });
 
 bot.command("listar", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Você escolheu listar seus itens! Escolha de onde", { reply_markup: listItemsMenu });
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Você escolheu listar seus itens! Escolha de onde", { reply_markup: listItemsMenu });
+  }
 });
 bot.command("modificar", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Você escolheu modificar um item! Escolha de onde", { reply_markup: itemModifyMenu });
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Você escolheu modificar um item! Escolha de onde", { reply_markup: itemModifyMenu });
+  }
 });
 bot.command("equip", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Vocẽ escolheu equipar ou desequipar um compartimento!", { reply_markup: equipPocketMenu });
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+   await ctx.reply("Vocẽ escolheu equipar ou desequipar um compartimento!", { reply_markup: equipPocketMenu });
+  }
 });
 
 bot.command("transferir", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Vocẽ escolheu transferir itens! Escolha da onde", { reply_markup: transferMenu });
-
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Vocẽ escolheu transferir itens! Escolha da onde", { reply_markup: transferMenu });
+  }
 });
 
 bot.command("status", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: statusMenu});
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: statusMenu});
+  }
 });
 
 bot.command("progresso", async (ctx) => {
   deleteP(9);
-  await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: xpMenu});
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Você escolheu ver o seu progresso! Escolha o que quer fazer.", { reply_markup: xpMenu});
+  }
 });
 
 bot.command("help", async (ctx) => {
   deleteP(9);
+  if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
   
   if(ctx.update.message.chat.type === "private"){
     await ctx.deleteMessage()
   }
   await ctx.reply("*Boas vindas e não temas\\! Este breve guia vem para ajudar a sanar suas dúvidas de forma clara e rápida\\!*\n\n/start \\-\\> Menu principal, por onde pode acessar todas as funções em menus navegáveis\\.\n/adicionar \\-\\> Adiciona itens ou compartimentos, se o item que estiver tentando adicionar já for existente no seu inventário ele será somado\\.\n/remover \\-\\> Remove itens ou compartimentos, ao remover item será questionado _quantos quer remover_ se houver mais de um daquele item, ao remover compartimentos é possível _remover todos os itens_ que estão naquele compartimento, o que é bastante útil se você pensar em criar um compartimento chamado lixeira, transferir todos os itens para lá e então de tempos em tempos remover todos de uma vez só\\!\n/modificar \\-\\> Modifica itens ou compartimentos\\. Permite modificar todas as propriedades dos itens e dos compartimentos, lembrando que todas as aterações feitas no compartimento afetarão também os itens que estão contidos nele\\.\n/listar \\-\\> Lista todos os itens equipados ou desequipados, acessando o menu compartimentos, porém, você é capaz de ver os compartimentos que estão vazios, ou seja, sem itens\\.\n/equip \\-\\> Desequipa compartimentos, bastante útil na hora que precisar desequipar ou equipar vários itens de uma vez só, ou seja, quando desequipa um compartimento, por exemplo, _todos os itens que pertencem aquele compartimento também serão desequipados_, então numa situação onde você estã com uma mochila nas costas você pode se livrar daquele peso todo de uma vez\\!\n/status \\-\\> Lista os status atuais, além de poder alterar as notificações do mesmo\\. Mostra como está seu personagem indicando quais foram os últimos acontecimentos aconteceram com seu personagem\\.\n/transferir \\-\\> Transfere seus itens para qualquer compartimento do inventário principal ou entre o cubo e o inventário\\. Com isso, você é capaz de desequipar ou equipar itens individualmente ou em grupos, transferindo para qualquer compartimento desejado\\.\n/progresso \\-\\> Lista ou modifica seu progresso, sendo de maior importância *listar as habilidades que você tem alguma XP ou hora de aprendizagem*, mas pode conter também outras Informações como pontos na carteira ou nomes de professores ou lugares\\.\n\nLembrando que itens *DESEQUIPADOS* significam que são itens que não estão com você\\! Logo, estes itens não constaram na lista de itens do mestre, então fique atento para isso\\.", {reply_markup: menuHelp, parse_mode: "MarkdownV2"});
+}
 });
 
 
