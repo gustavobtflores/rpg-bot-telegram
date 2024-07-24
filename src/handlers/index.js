@@ -4,8 +4,9 @@ const { InlineKeyboard } = require("grammy");
 
 function handleChatTypeResponse(chatID, ctx) {
   var pass = false;
+  let strID = chatID.toString();
   const IDs = Object.values(playersID);
-  if (IDs.find((id) => id === chatID)) {
+  if (IDs.find((id) => id === strID)) {
     pass = true;
   } else {
     ctx.reply("Você ainda não está cadastrado.");
