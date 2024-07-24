@@ -340,7 +340,7 @@ async function modifyPockets(conversation, ctx) {
     
     for (let pocketsModified of modifiedList) {
       
-      if (!isValidItem(pocketsModified, ITEM_REGEX)) {
+      if (!isValidItem(pocketsModified, ITEM_REGEX, flagModify)) {
       await ctx.reply(`Houve um problema ao identificar um dos compartimentos, erro foi nesse compartimento aqui: \n\n${pocketsModified}\n\nQuer tentar de novo?`, { reply_markup: confirmPockets });
 
       var res = await conversation.waitForCallbackQuery(["yes", "no"]);
