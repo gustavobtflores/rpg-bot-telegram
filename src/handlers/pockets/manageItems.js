@@ -1,9 +1,10 @@
 const { InlineKeyboard } = require("grammy");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets } = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets, listCompare, listSort } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { saveItem, deleteItem, catchItem } = require("../../config/storage");
 
   const enter = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n"; 
+
 async function transferItem(conversation, ctx) {
   let ID;
   let chatID
@@ -84,7 +85,7 @@ async function transferItem(conversation, ctx) {
 
   await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
 
-  const listItemRemove = await transferItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation);
+  const listItemRemove = await transferItemDefine(inventoryList, inventoryNow, pocketToStore, equipped, ctx, conversation);
   
   if (listItemRemove.modList.length === 0) {
     await ctx.reply(`Estes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${listItemRemove.nonAdd.map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`).join("\n\n")}\n\nPeso total a ser transferido: ${limitarCasasDecimais(listItemRemove.nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0), 3)}Kg - Confirma?`, {
@@ -182,7 +183,7 @@ async function transferItem(conversation, ctx) {
     }
   }
 }
-async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation) {
+async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, equipped, ctx, conversation) {
   var modList = [];
   var nonAdd = [];
   var remove = [];
@@ -190,11 +191,15 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, ct
   let pocketToRemove;
   let itemPocket;
   let pocketRemoved = [];
+  let testList;
+
+  await inventoryList.sort(listSort);
+  let inventoryTemp = [ ...inventoryList];
   
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
     
-    commomPocket = await getCommonPockets(inventoryNow, item.name);
+    commomPocket = await getCommonPockets(inventoryNow, item.name, equipped);
     const indexCommomPocket = commomPocket.indexOf(pocketToStore);
     if (indexCommomPocket > -1){
       commomPocket.splice(indexCommomPocket, 1);
@@ -288,7 +293,11 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, ct
         }
       }
     itemPocket.pocket = pocketToRemove;
-    pocketRemoved.push(pocketToRemove);
+    
+    if(testList){
+      pocketRemoved.push(testList);
+    }
+    await inventoryTemp.shift();
     remove.push(itemPocket);
     
   }}

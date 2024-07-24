@@ -129,11 +129,11 @@ function extractItemsFromPockets(objectItems){
 }
 
 
-function getCommonPockets(inventory, item) {
+function getCommonPockets(inventory, item, equipped) {
   const pockets = [];
   
   for (const objeto of inventory) {
-    if (objeto.name === item && !pockets.includes(objeto.pocket)) {
+    if (objeto.name === item && !pockets.includes(objeto.pocket) && objeto.equipped === equipped) {
       pockets.push(objeto.pocket);
     }
   }
@@ -214,8 +214,25 @@ function formatDateToCustomFormat() {
   const formattedDate = `${hours}h${minutes}m - ${day}/${month}/${year}`;
   return formattedDate;
 }
+function listCompare(listaDeObjetos){
+  for (let i = 1; i < listaDeObjetos.length; i++) {
+    let itemAtual = listaDeObjetos[i];
+    let itemAnterior = listaDeObjetos[i - 1];
 
+    if(itemAtual.pocket !== itemAnterior.pocket){
+      return(itemAnterior.pocket);
+  }}
 
+}
+function listSort(a, b) {
+  if (a.pocket < b.pocket) {
+      return -1;
+  }
+  if (a.pocket > b.pocket) {
+      return 1;
+  }
+  return 0;
+}
 module.exports = {
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
@@ -230,5 +247,7 @@ module.exports = {
   extractItemsFromPockets,
   splitItemQuant,
   getCommonPockets,
-  formatDateToCustomFormat
+  formatDateToCustomFormat,
+  listCompare,
+  listSort
 };

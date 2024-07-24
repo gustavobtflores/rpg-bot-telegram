@@ -1,10 +1,9 @@
 const { InlineKeyboard } = require("grammy");
 const { deleteItem, saveItem, catchItem } = require("../../config/storage");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant, getCommonPockets } = require("..");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant, getCommonPockets, listSort, listCompare } = require("..");
 const { getFormattedCharacters } = require("../../utils");
 
 async function transferCube(conversation, ctx, fun) {
-  let chatID;
   let modifiedDesc = fun === "invCube" ? "Transferiu item pro cubo" : "Pegou item do cubo";
   const modifiedDate = ctx.update.callback_query.message.date;
   const CHARACTERS = await catchItem("characters");
@@ -55,6 +54,8 @@ async function transferCube(conversation, ctx, fun) {
 
   const { message } = await conversation.wait();
 
+  let chatID = message.chat.id;
+
   var inventoryList = extractInventoryItemsFromMessage(message.text, flagChoose);
   var inventoryNow = authorCharacter.items.map((item) => item);
   var inventoryCube = cubeCharacter.items.map((item) => item);
@@ -71,7 +72,7 @@ async function transferCube(conversation, ctx, fun) {
 
       if (res.match === "yes") {
         ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
-        await transferItem(conversation, ctx);
+        await transferCube(conversation, ctx, fun);
       } else {
         return ctx.editMessageText("Ok, qualquer coisa estou por aqui haha.", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
       }
@@ -79,7 +80,7 @@ async function transferCube(conversation, ctx, fun) {
     }
   }
   
-  const listItemRemove = await transferItemDefine(inventoryList, fun === "invCube" ? inventoryNow : inventoryCube, fun !== "invCube" ? inventoryNow : inventoryCube, pocketToStore, ctx, conversation, fun);
+  const listItemRemove = await transferItemDefine(inventoryList, fun === "invCube" ? inventoryNow : inventoryCube, fun !== "invCube" ? inventoryNow : inventoryCube, pocketToStore,equipped,  ctx, conversation, fun);
   
   if (listItemRemove.modList.length === 0) {
     await ctx.reply(`Estes itens serão somados aos itens já existentes em ${pocketToStore}:\n\n${listItemRemove.nonAdd.map((item) => ` - ${item.name}: ${item.weight}Kg - ${item.quantity}Un => ${limitarCasasDecimais(item.weight * item.quantity, 3)}Kg`).join("\n\n")}\n\nPeso total a ser transferido: ${limitarCasasDecimais(listItemRemove.nonAdd.reduce((acc, item) => acc + item.weight * item.quantity, 0), 3)}Kg - Confirma?`, {
@@ -174,13 +175,15 @@ async function transferCube(conversation, ctx, fun) {
     if (res.match === "yes") {
       await ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
 
-      await transferItem(conversation, ctx);
+      await transferCube(conversation, ctx, fun);
     } else {
       ctx.editMessageText("Ok, estarei aqui se precisar alterar alguma coisa haha!", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
     }
   }
 }
-async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, pocketToStore, ctx, conversation, fun) {
+
+
+async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, pocketToStore,equipped,  ctx, conversation, fun) {
   var modList = [];
   var nonAdd = [];
   var remove = [];
@@ -188,11 +191,18 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
   let pocketToRemove;
   let itemPocket;
   let pocketRemoved = [];
+  let testList;
+
+  await inventoryList.sort(listSort);
+  let inventoryTemp = [ ...inventoryList];
   
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
-    
-    commomPocket = await getCommonPockets(inventoryNow, item.name);
+
+    console.log("bbbbb");
+    console.log("\n\n\n\n\n");
+
+    commomPocket = await getCommonPockets(inventoryNow, item.name, equipped);
     const indexCommomPocket = commomPocket.indexOf(pocketToStore);
     if (indexCommomPocket > -1){
       commomPocket.splice(indexCommomPocket, 1);
@@ -239,6 +249,7 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
       pocketToRemove = item.pocket;
       itemPocket ={...item};
     }
+
     if(commomPocket.length !== 0 ) {
         
     if (itemPocket.quantity !== 1) {
@@ -254,6 +265,8 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
     const test = inventoryLater.find((index) => {
       return index.name === itemPocket.name && index.pocket === pocketToStore;
     });
+
+    console.log("aaa");
     if(test){
       
         let sameItemIndex = -1;
@@ -286,7 +299,12 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
         }
       }
     itemPocket.pocket = pocketToRemove;
-    pocketRemoved.push(pocketToRemove);
+    testList = await listCompare(inventoryTemp);
+    
+    if(testList){
+      pocketRemoved.push(testList);
+    }
+    await inventoryTemp.shift();
     remove.push(itemPocket);
     
   }}
