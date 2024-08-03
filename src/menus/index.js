@@ -548,6 +548,9 @@ const listPlayersMenu = new Menu("list-itens-players")
   .text(
     (ctx) => (ctx.from && P[0].has(playersID.Abbadon) ? "🍺" : "Abbadon"),
     async (ctx) => {
+
+      try{
+
       deleteP(0);
       toggleP(playersID.Abbadon, 0);
 
@@ -555,13 +558,15 @@ const listPlayersMenu = new Menu("list-itens-players")
         ctx.editMessageText(`${await getFormattedCharacters(playersID.Abbadon, true)}ˆˆEstes são os itens de Abbadonˆˆ`);
       } else {
         ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-      }
+      }}catch(err){}
     }
   )
 
   .text(
     (ctx) => (ctx.from && P[1].has(playersID.Fergus) ? "🦁" : "Fergus"),
     async (ctx) => {
+
+      try{
       deleteP(1);
       toggleP(playersID.Fergus, 1);
 
@@ -569,12 +574,14 @@ const listPlayersMenu = new Menu("list-itens-players")
         ctx.editMessageText(`${await getFormattedCharacters(playersID.Fergus, true)}ˆˆEstes são os itens de Fergusˆˆ`);
       } else {
         ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-      }
+      }}catch(err){}
     }
   )
   .text(
     (ctx) => (ctx.from && P[2].has(playersID.Tibius) ? "🐐" : "Tibius"),
     async (ctx) => {
+      
+      try{
       deleteP(2);
       toggleP(playersID.Tibius, 2);
 
@@ -582,7 +589,7 @@ const listPlayersMenu = new Menu("list-itens-players")
         ctx.editMessageText(`${await getFormattedCharacters(playersID.Tibius, true)}ˆˆEstes são os itens de Tibiusˆˆ`);
       } else {
         ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-      }
+      }}catch(err){}
     }
   )
   .row()
@@ -593,19 +600,21 @@ const listPlayersMenu = new Menu("list-itens-players")
   .text(
     (ctx) => (ctx.from && P[3].has(playersID.Cubo) ? "📦" : "Cubo"),
     async (ctx) => {
+      try{
       deleteP(3);
       toggleP(playersID.Cubo, 3);
 
       if (P[3].has(playersID.Cubo)) {
-        ctx.editMessageText(`${await getFormattedCharacters(playersID.Cubo)}ˆ˜Estes são os itens no Cuboˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters(playersID.Cubo)}ˆˆEstes são os itens no Cuboˆˆ`);
       } else {
         ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-      }
+      }}catch(err){}
     }
   )
   .text(
     (ctx) => (ctx.from && P[4].has(ctx.from.id) ? "♾" : "Todos"),
     async (ctx) => {
+      try{
       deleteP(4);
       toggleP(ctx.from.id, 4);
 
@@ -613,7 +622,7 @@ const listPlayersMenu = new Menu("list-itens-players")
         ctx.editMessageText(`${await getFormattedCharacters("any", true, "all")}ˆˆEstes são os itens de todosˆˆ`);
       } else {
         ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
-      }
+      }}catch(err){}
     }
   );
 var statusName = ["PV","PF","PM"];
