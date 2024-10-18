@@ -61,12 +61,12 @@ bot.use(menuHelp);
 
 bot.command("start", async (ctx) => {
   deleteP(9);
-  //if (ctx.update.message.from.id === 744974273) {
+  if (ctx.update.message.from.id === 744974273) {
     await statusReset();
     await ctx.reply("Seja bem vindo Dungeon Master!", { reply_markup: DgMMenu });
-  //} else if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
-   // await ctx.reply("Bem vindo ao bot de itens! Que inventário quer usar?", { reply_markup: mainMenu });
-  //}
+  } else if(await handleChatTypeResponse(ctx.update.message.from.id, ctx)) {
+    await ctx.reply("Bem vindo ao bot de itens! Que inventário quer usar?", { reply_markup: mainMenu });
+  }
 });
 
 bot.command("adicionar", async (ctx) => {
