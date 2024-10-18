@@ -19,7 +19,7 @@ const CHARACTERS = [
       { name: "Capacete", weight: 30, quantity: 1, desc: "", equipped: true, pocket: "Mochila"  },
     ],
     status: { 
-      pvMax: 19, pfMax: 15, pmMax: 25, pvAtual:9, pfAtual: 10, pmAtual:25, log: ["levou uma lapada","descansou", "até 5 logs"]
+      pvMax: 19, pfMax: 15, pmMax: 25, legMax: 4, pvAtual:9, pfAtual: 10, pmAtual:25, legAtual: 4, log: ["levou uma lapada","descansou", "até 5 logs"]
     },
     notifications: true,
     lastModified: "hora - data",

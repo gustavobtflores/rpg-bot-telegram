@@ -252,7 +252,8 @@ const inventoryMenu = new Menu("inventory-menu")
     await ctx.conversation.enter("remove-item");
   })
   .text("Modificar", async (ctx) => {
-    await ctx.conversation.enter("modify-item");
+    await ctx.reply("Desculpe mas esta função está em manutenção!");
+    //await ctx.conversation.enter("modify-item");
   }).row()
   .back("⏪", async (ctx) => {
     deleteP(9);
@@ -295,7 +296,8 @@ const pocketsMenu = new Menu("pockets-menu")
     await ctx.conversation.enter("remove-pockets");
   })
   .text("Modificar", async (ctx) => {
-    await ctx.conversation.enter("modify-pockets");
+    await ctx.reply("Desculpe mas esta função está em manutenção!");
+    //await ctx.conversation.enter("modify-pockets");
   }).row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
@@ -350,7 +352,8 @@ const cubeMenu = new Menu("cube-menu")
     await ctx.conversation.enter("remove-cube");
   })
   .text("Modificar itens", async (ctx) => {
-    await ctx.conversation.enter("modify-cube");
+    await ctx.reply("Desculpe mas esta função está em manutenção!");
+    //await ctx.conversation.enter("modify-cube");
   })
   .row()
   .text("Transferir:")
@@ -625,8 +628,8 @@ const listPlayersMenu = new Menu("list-itens-players")
       }}catch(err){}
     }
   );
-var statusName = ["PV","PF","PM"];
-var statusValue = [[0,0 ,0],[0,0 ,0],[0,0 ,0]];
+var statusName = ["PV","PF","PM","Lend"];
+var statusValue = [[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0]];
 
 const changeStatus = new Menu("dynamic")
   .dynamic(async () => {
@@ -639,12 +642,13 @@ const changeStatus = new Menu("dynamic")
         .text(`${statusName[i]}: ${statusValue[n][i] > 0 ? `+${statusValue[n][i]}`: `${statusValue[n][i]}`}`)
         .text("-3", (ctx) => {
          let tempValue = statusValue[n][i];
-         if(i === 2){
+         if(i >= 2){
            statusValue[n][i]-=3;
-           let testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+           let valorTeste = i === 2 ? authorCharacter.status.pmAtual : authorCharacter.status.legAtual;
+           let testeNegativo = statusValue[n][i] + valorTeste;
              while (testeNegativo<0) {
                statusValue[n][i] += 1;
-               testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+               testeNegativo = statusValue[n][i] + valorTeste;
              }
          }else{
            statusValue[n][i]-=3;
@@ -656,12 +660,13 @@ const changeStatus = new Menu("dynamic")
         })
         .text("-", (ctx) => {
          let tempValue = statusValue[n][i];
-         if(i === 2){
+         if(i >= 2){
+          let valorTeste = i === 2 ? authorCharacter.status.pmAtual : authorCharacter.status.legAtual;
            statusValue[n][i]-=1;
-           let testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+           let testeNegativo = statusValue[n][i] + valorTeste;
              while (testeNegativo<0) {
                statusValue[n][i] += 1;
-               testeNegativo = statusValue[n][i] + authorCharacter.status.pmAtual;
+               testeNegativo = statusValue[n][i] + valorTeste;
              }
          }else{
            statusValue[n][i]-=1;

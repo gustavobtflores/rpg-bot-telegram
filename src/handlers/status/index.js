@@ -20,8 +20,9 @@ async function status(conversation, ctx){
   const pvTexto = statusValue[i][0] !== 0 ? `PV(${char.status.pvMax}): ${char.status.pvAtual} ${statusValue[i][0] > 0 ? `+${statusValue[i][0]}`: `${statusValue[i][0]}`} => ${(char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? `${char.status.pvMax}` : `${char.status.pvAtual + statusValue[i][0]}`}` : '';
   const pfTexto = statusValue[i][1] !== 0 ? `PF(${char.status.pfMax}): ${char.status.pfAtual} ${statusValue[i][1] > 0 ? `+${statusValue[i][1]}`: `${statusValue[i][1]}`} => ${(char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? `${char.status.pfMax}` : `${char.status.pfAtual + statusValue[i][1]}`}` : '';
   const pmTexto = statusValue[i][2] !== 0 ? `PM(${char.status.pmMax}): ${char.status.pmAtual} ${statusValue[i][2] > 0 ? `+${statusValue[i][2]}`: `${statusValue[i][2]}`} => ${(char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? `${char.status.pmMax}` : `${(char.status.pmAtual + statusValue[i][2]) < 0 ? `0`:`${char.status.pmAtual + statusValue[i][2]}`}`}` : '';
+  const legTexto = statusValue[i][3] !== 0 ? `Item Lendário(${char.status.legMax}): ${char.status.legAtual} ${statusValue[i][3] > 0 ? `+${statusValue[i][3]}`: `${statusValue[i][3]}`} => ${(char.status.legAtual + statusValue[i][3]) >= char.status.legMax ? `${char.status.legMax}` : `${(char.status.legAtual + statusValue[i][3]) < 0 ? `0`:`${char.status.legAtual + statusValue[i][3]}`}`}` : '';
   
-  const textoFinal = [pvTexto, pfTexto, pmTexto].filter(texto => texto !== '').join('\n');
+  const textoFinal = [pvTexto, pfTexto, pmTexto, legTexto].filter(texto => texto !== '').join('\n');
 
   return `${value}\n\n${textoFinal}`;
 }).join("\n\n")}\n\nDescreva sobre as alterações. (Se houver mais de um personagem, pode adicionar descrições separadas utilizando enter)`);
@@ -37,6 +38,8 @@ async function status(conversation, ctx){
   const pvTexto = statusValue[i][0] !== 0 ? `PV(${char.status.pvMax}): ${char.status.pvAtual} ${statusValue[i][0] > 0 ? `+${statusValue[i][0]}`: `${statusValue[i][0]}`} => ${(char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? `${char.status.pvMax}` : `${char.status.pvAtual + statusValue[i][0]}`}` : '';
   const pfTexto = statusValue[i][1] !== 0 ? `PF(${char.status.pfMax}): ${char.status.pfAtual} ${statusValue[i][1] > 0 ? `+${statusValue[i][1]}`: `${statusValue[i][1]}`} => ${(char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? `${char.status.pfMax}` : `${char.status.pfAtual + statusValue[i][1]}`}` : '';
   const pmTexto = statusValue[i][2] !== 0 ? `PM(${char.status.pmMax}): ${char.status.pmAtual} ${statusValue[i][2] > 0 ? `+${statusValue[i][2]}`: `${statusValue[i][2]}`} => ${(char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? `${char.status.pmMax}` : `${(char.status.pmAtual + statusValue[i][2]) < 0 ? `0`:`${char.status.pmAtual + statusValue[i][2]}`}`}` : '';
+  const legTexto = statusValue[i][3] !== 0 ? `Item Lendário(${char.status.legMax}): ${char.status.legAtual} ${statusValue[i][3] > 0 ? `+${statusValue[i][3]}`: `${statusValue[i][3]}`} => ${(char.status.legAtual + statusValue[i][3]) >= char.status.legMax ? `${char.status.legMax}` : `${(char.status.legAtual + statusValue[i][3]) < 0 ? `0`:`${char.status.legAtual + statusValue[i][3]}`}`}` : '';
+  
   desc.push(`${logList[i] === undefined ? logList[0] : logList[i]} ${statusValue[i].map((item, u) => { 
   if(item !== 0){
   var atr = "";
@@ -48,9 +51,12 @@ async function status(conversation, ctx){
       atr = "PF";
       
     return `${item > 0 ? `+${item}`: `${item}`} ${atr}`;
-    }else{
+    }else if(u === 2){
       atr = "PM";
       
+    return `${item > 0 ? `+${item}`: `${item}`} ${atr}`;
+    }else{
+      atr = "Lend";
     return `${item > 0 ? `+${item}`: `${item}`} ${atr}`;
     }
     
@@ -59,7 +65,7 @@ async function status(conversation, ctx){
     
   }`)
   
-  const textoFinal = [pvTexto, pfTexto, pmTexto,"DESCRIÇÃO: " + desc[i]].filter(texto => texto !== '').join('\n');
+  const textoFinal = [pvTexto, pfTexto, pmTexto, legTexto, "DESCRIÇÃO: " + desc[i]].filter(texto => texto !== '').join('\n');
   
   return `${value}\n\n${textoFinal}`;
 }).join("\n\n")}\n\nConfirma?`, { reply_markup: confirmStatus});
@@ -77,21 +83,24 @@ async function status(conversation, ctx){
         const newStatus = [
           (char.status.pvAtual + statusValue[i][0]) >= char.status.pvMax ? char.status.pvMax : char.status.pvAtual + statusValue[i][0], 
           (char.status.pfAtual + statusValue[i][1]) >= char.status.pfMax ? char.status.pfMax : char.status.pfAtual + statusValue[i][1],
-          (char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? char.status.pmMax : char.status.pmAtual + statusValue[i][2]
+          (char.status.pmAtual + statusValue[i][2]) >= char.status.pmMax ? char.status.pmMax : char.status.pmAtual + statusValue[i][2],
+          (char.status.legAtual + statusValue[i][3]) >= char.status.legMax ? char.status.legMax : char.status.legAtual + statusValue[i][3]
           ];
           
         if(char.status.notifications){
           const modPv = newStatus[0] !== char.status.pvAtual ? `\nPV (${char.status.pvMax}): ${char.status.pvAtual} => ${newStatus[0]}`:"";
           const modPf = newStatus[1] !== char.status.pfAtual ? `\nPF (${char.status.pfMax}): ${char.status.pfAtual} => ${newStatus[1]}`: "";
           const modPm = newStatus[2] !== char.status.pmAtual ? `\nPM (${char.status.pmMax}): ${char.status.pmAtual} => ${newStatus[2]}` : "";
+          const modLeg = newStatus[3] !== char.status.legAtual ? `\nPM (${char.status.legMax}): ${char.status.legAtual} => ${newStatus[3]}` : "";
           
-          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> ${desc[i]}\n${modPv}${modPf}${modPm}`, { chat_id: parseInt(char.id)});
+          ctx.reply(`Os seus status mudaram! Veja o que aconteceu:\n\n -> ${desc[i]}\n${modPv}${modPf}${modPm}${modLeg}`, { chat_id: parseInt(char.id)});
         }
         
         
         char.status.pvAtual = newStatus[0];
         char.status.pfAtual = newStatus[1];
         char.status.pmAtual = newStatus[2];
+        char.status.legAtual = newStatus[3];
         char.status.log.push(desc[i]);
         if(char.status.log.length > 5){
           char.status.log.shift();
