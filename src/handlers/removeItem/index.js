@@ -140,13 +140,8 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
     if(!tempCube){
       
-        commomPocket = await getCommonPockets(inventoryNow, item.name, equipped);
-        for(let pocket of pocketRemoved){
-          let indexPocketRemoved = commomPocket.indexOf(pocket);
-          if (indexPocketRemoved > -1){
-            commomPocket.splice(indexPocketRemoved, 1);
-          }
-        }
+        commomPocket = await getCommonPockets(inventoryNow, item.name, equipped, pocketRemoved);
+        
         if(commomPocket.length > 1){
           const buttonRow = await splitPocketQuant(commomPocket);
           
@@ -192,7 +187,7 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
         
     if (itemPocket.quantity !== 1) {
       const quant = await splitItemQuant(itemPocket);
-      await ctx.reply(`Quantas unidades de ${itemPocket.name} do compartimento ${itemPocket.pocket} deseja transferir?`, { reply_markup: quant.InlineNumbers });
+      await ctx.reply(`Quantas unidades de ${itemPocket.name} do compartimento ${itemPocket.pocket} deseja remover?`, { reply_markup: quant.InlineNumbers });
 
       var res = await conversation.waitForCallbackQuery(quant.itemString);
 
@@ -216,9 +211,8 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
         }
     itemPocket.pocket = pocketToRemove;
     
-    if(testList){
-      pocketRemoved.push(testList);
-    }
+    pocketRemoved.push(pocketToRemove);
+    
     await inventoryTemp.shift();
     listItemRemove.push(itemPocket);
     }else{

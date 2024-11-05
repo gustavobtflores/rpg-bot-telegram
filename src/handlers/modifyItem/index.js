@@ -77,7 +77,7 @@ async function modifyItem(conversation, ctx, cube) {
     }
   }
   
-  let listItemModify = await modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube);
+  let listItemModify = await modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube, equipped);
 
 try{
   await ctx.reply(
@@ -155,7 +155,7 @@ try{
 }
 
 
-async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube) {
+async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube, equipped) {
   var listItemModify = [];
   var nonAdd = [];
   let modList = [];
@@ -172,14 +172,8 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
     if(!tempCube){  
-    commomPocket = await getCommonPockets(inventoryNow, item.name);
+    commomPocket = await getCommonPockets(inventoryNow, item.name, equipped, pocketRemoved);
     
-    for(let pocket of pocketRemoved){
-      let indexPocketRemoved = commomPocket.indexOf(pocket);
-      if (indexPocketRemoved > -1){
-        commomPocket.splice(indexPocketRemoved, 1);
-      }
-    }
     if(commomPocket.length > 1){
       const buttonRow = await splitPocketQuant(commomPocket);
       

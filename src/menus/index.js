@@ -23,12 +23,12 @@ const statusMenuRange = new MenuRange()
     })
   .text( 
       async (ctx) =>{
-        const CHARStoNotificate = await catchItem("characters")
+        const CHARStoNotificate = await catchItem("characters");
         const charToNotificate = CHARStoNotificate.find(value => String(ctx.from.id) === value.id);
-        return (charToNotificate.status.notifications ? "🔔" : "🔕")
+        return (charToNotificate.status.notifications ? "🔔" : "🔕");
       },
       async (ctx) =>{
-        const CHARStoNotificate = await catchItem("characters")
+        const CHARStoNotificate = await catchItem("characters");
         const charToNotificate = CHARStoNotificate.find(value => String(ctx.from.id) === value.id);
   
         if (charToNotificate.status.notifications) {
@@ -54,7 +54,7 @@ const xpMenuRange = new MenuRange()
         if(P[3].has("main")){
           await ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
         }else{
-          await ctx.editMessageText("Você escolheu ver o seu progresso! Escolha o que quer fazer.");
+          await ctx.editMessageText("Você escolheu ver o seu progresso de XP! Escolha o que quer fazer.");
         }
       }
     })
@@ -252,15 +252,14 @@ const inventoryMenu = new Menu("inventory-menu")
     await ctx.conversation.enter("remove-item");
   })
   .text("Modificar", async (ctx) => {
-    await ctx.reply("Desculpe mas esta função está em manutenção!");
-    //await ctx.conversation.enter("modify-item");
+    await ctx.conversation.enter("modify-item");
   }).row()
   .back("⏪", async (ctx) => {
     deleteP(9);
     ctx.editMessageText("Bem vindo ao bot de itens! Que inventário quer usar?");
   })
-  .text("Transferir", async (ctx) => {
-    await ctx.conversation.enter("transfer-item");
+  .submenu("Transferir","transfer-menu2" , async (ctx) => {
+    await ctx.editMessageText("Você escolheu transferir itens! Escolha da onde");
   });
   
 const pocketsMenu = new Menu("pockets-menu")
@@ -296,8 +295,7 @@ const pocketsMenu = new Menu("pockets-menu")
     await ctx.conversation.enter("remove-pockets");
   })
   .text("Modificar", async (ctx) => {
-    await ctx.reply("Desculpe mas esta função está em manutenção!");
-    //await ctx.conversation.enter("modify-pockets");
+    await ctx.conversation.enter("modify-pockets");
   }).row()
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
@@ -327,6 +325,23 @@ const transferMenu = new Menu("transfer-menu")
     await ctx.conversation.enter("cubeInv");
   });
   
+  const transferMenu2 = new Menu("transfer-menu2")
+  .back("⏪ Voltar", async (ctx) => {
+    deleteP(9);
+    ctx.editMessageText("Você escolheu o inventário itens! Escolha o que quer fazer");
+  })
+  .text("🎒 Inventário principal", async (ctx) => {
+    await ctx.conversation.enter("transfer-item");
+  })
+  .row()
+  .text("Cubo:")
+  .text("Inv ➡️ Cubo", async (ctx) =>{
+    await ctx.conversation.enter("invCube");
+  })
+  .text("Cubo ➡️ Inv", async (ctx) =>{
+    await ctx.conversation.enter("cubeInv");
+  });
+  
 const cubeMenu = new Menu("cube-menu")
   .back("⏪ Voltar", async (ctx) => {
     deleteP(9);
@@ -339,7 +354,7 @@ const cubeMenu = new Menu("cube-menu")
       toggleP("cube", 2);
 
       if (P[2].has("cube")) {
-        ctx.editMessageText(`${await getFormattedCharacters("cube", true)}ˆ˜Estes são os no cuboˆˆ`);
+        ctx.editMessageText(`${await getFormattedCharacters("cube", true)}ˆˆEstes são os no cuboˆˆ`);
       } else {
         ctx.editMessageText("Você escolheu o inventário do cubo! Escolha o que quer fazer");
       }
@@ -352,8 +367,7 @@ const cubeMenu = new Menu("cube-menu")
     await ctx.conversation.enter("remove-cube");
   })
   .text("Modificar itens", async (ctx) => {
-    await ctx.reply("Desculpe mas esta função está em manutenção!");
-    //await ctx.conversation.enter("modify-cube");
+    await ctx.conversation.enter("modify-cube");
   })
   .row()
   .text("Transferir:")
@@ -373,6 +387,9 @@ const itemModifyMenu = new Menu("item-modify-menu")
   })
   .text("Cubo", async (ctx) => {
     await ctx.conversation.enter("modify-cube");
+  })
+  .text("XP", async (ctx) => {
+    await ctx.conversation.enter("progress");
   })
   .dynamic(async () => rodape);
 
@@ -413,12 +430,12 @@ const xpMenu = new Menu("xp-menu")
   
   
 const DgMMenu = new Menu("Dungeon-Master-menu")
-  .submenu("Itens", "list-itens-players", (ctx) => {
+  .submenu("Itens", "list-itens-players", async (ctx) => {
     ctx.editMessageText("Escolha de que personagem deseja ver os itens.");
   })
   .submenu("Status", "players", async (ctx) => {
     await ctx.editMessageText(`${await getFormattedCharacters(ctx.from.id, false, "status")}\n\nˆˆEstes são os status dos personagens atualmenteˆˆ\n\nSelecione qual personagem quer alterar cada status individualmente ou recupere tudo de uma vez.`);
-  }).submenu("Progresso", "progress", async (ctx) =>{
+  }).submenu("XP", "progress", async (ctx) =>{
     await ctx.editMessageText("Escolha de que personagem quer ver a relação de XP.");
   });
   
@@ -749,5 +766,6 @@ module.exports = {
   progressMenu,
   statusMenu,
   xpMenu,
-  transferMenu
+  transferMenu,
+  transferMenu2
 };

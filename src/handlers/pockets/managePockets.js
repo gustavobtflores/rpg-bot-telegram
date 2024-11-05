@@ -287,6 +287,7 @@ async function modifyPockets(conversation, ctx) {
   const chatID = ctx.update.callback_query.message.chat.id;
   const authorId = String(ID);
   const authorCharacter = CHARACTERS.find((character) => character.id === authorId);
+  let indexTest = -1;
    
 
   if (!handleChatTypeResponse(authorId, ctx)) {
@@ -307,6 +308,7 @@ async function modifyPockets(conversation, ctx) {
   const { message } = await conversation.wait();
 
   var pocketsList = extractInventoryItemsFromMessage(message.text, flagChoose);
+  let pocketsListTemp = [ ...pocketsList];
   var pocketsNow = authorCharacter.pockets.map((item) => item);
 
   for (let pocketToModify of pocketsList) {
@@ -329,7 +331,7 @@ async function modifyPockets(conversation, ctx) {
   
   let pocketsItemModify = [];
 
-  for (let pocketsToModify of pocketsList) {
+  for (let pocketsToModify of pocketsListTemp) {
     let item = { ...pocketsNow.find((item) => item.name.toLowerCase() === pocketsToModify.toLowerCase()) };
 
     ctx.reply(`Você irá modificar o compartimento:\n\n -> ${item.name} - ${item.equipped === true ? "Equipado": "Desequipado"}\n\nEscreva as alterações que deseja fazer seguindo o modelo:\n\n <nome do compartimento>, <equipado ou desequipado>\n\nExemplo1:\n mochila, equipado`);
@@ -343,7 +345,7 @@ async function modifyPockets(conversation, ctx) {
       if (!isValidItem(pocketsModified, ITEM_REGEX, flagModify)) {
       await ctx.reply(`Houve um problema ao identificar um dos compartimentos, erro foi nesse compartimento aqui: \n\n${pocketsModified}\n\nQuer tentar de novo?`, { reply_markup: confirmPockets });
 
-      var res = await conversation.waitForCallbackQuery(["yes", "no"]);
+      const res = await conversation.waitForCallbackQuery(["yes", "no"]);
 
       if (res.match === "yes") {
         ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
@@ -355,10 +357,36 @@ async function modifyPockets(conversation, ctx) {
     }
     var parsedItem = await parseItemFromInventoryString(pocketsModified, flagModify);
   }
-    pocketsItemModify.push(parsedItem);
+  
+    const test = pocketsNow.find((item) => item.name.toLowerCase() === parsedItem.name.toLowerCase());
+    if(!test){
+      pocketsItemModify.push(parsedItem);
+      
+    }else{
+      indexTest = pocketsList.indexOf(pocketsToModify.toLowerCase());
+    }
+    if (indexTest > -1){
+      pocketsList.splice(indexTest, 1);
+      indexTest = -1;
+    }
+    
   }
   
+  if(pocketsItemModify.length < 1){
+    await ctx.reply(`Desculpe mas você está tentando modificar um compartimento para um já existente.\n\nTente verificar se ele está equipado ou desequipado na aba de compartimentos pelo menu principal. Quer tentar de novo?`, { reply_markup: confirmPockets });
 
+      const res = await conversation.waitForCallbackQuery(["yes", "no"]);
+
+      if (res.match === "yes") {
+        ctx.api.deleteMessage(chatID, res.update.callback_query.message.message_id);
+        await modifyPockets(conversation, ctx);
+      } else {
+        return ctx.editMessageText("Ok, qualquer coisa estou por aqui haha.", { reply_markup: blank, message_id: res.update.callback_query.message.message_id });
+      }
+      return;
+  }
+  
+  
   await ctx.reply(
     `Confira os itens que quer modificar:\nAntes:\n\n${pocketsList.map((itemMod, i) => {
         const index = authorCharacter.pockets.findIndex((item) => item.name.toLowerCase() === itemMod.toLowerCase());

@@ -199,17 +199,8 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
     
-    commomPocket = await getCommonPockets(inventoryNow, item.name, equipped);
-    const indexCommomPocket = commomPocket.indexOf(pocketToStore);
-    if (indexCommomPocket > -1){
-      commomPocket.splice(indexCommomPocket, 1);
-    }
-    for(let pocket of pocketRemoved){
-      let indexPocketRemoved = commomPocket.indexOf(pocket);
-      if (indexPocketRemoved > -1){
-        commomPocket.splice(indexPocketRemoved, 1);
-      }
-    }
+    commomPocket = await getCommonPockets(inventoryNow, item.name, equipped, pocketRemoved, pocketToStore);
+   
     if(commomPocket.length > 1){
       const buttonRow = await splitPocketQuant(commomPocket);
       
@@ -294,9 +285,8 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
       }
     itemPocket.pocket = pocketToRemove;
     
-    if(testList){
-      pocketRemoved.push(testList);
-    }
+    pocketRemoved.push(pocketToRemove);
+    
     await inventoryTemp.shift();
     remove.push(itemPocket);
     

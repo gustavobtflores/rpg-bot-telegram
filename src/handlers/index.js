@@ -19,12 +19,12 @@ function extractInventoryItemsFromMessage(text, addRemove) {
     return [];
   }
   if (!text.includes("\n") && !addRemove) {
-    return text.split(",").map((item) => item.trim());
+    return text.split(",").map((item) => item.toLowerCase().trim());
   }
   if (!text.includes(";")) {
-    return text.split("\n").map((item) => item.trim());
+    return text.split("\n").map((item) => item.toLowerCase().trim());
   }
-  return text.split(";").map((item) => item.trim());
+  return text.split(";").map((item) => item.toLowerCase().trim());
 }
 
 function isValidItem(item, ITEM_REGEX, flag) {
@@ -132,14 +132,26 @@ function extractItemsFromPockets(objectItems){
 }
 
 
-function getCommonPockets(inventory, item, equipped) {
+function getCommonPockets(inventory, item, equipped, pocketsUnv, pocketToStore) {
   const pockets = [];
   
   for (const objeto of inventory) {
     if (objeto.name === item && !pockets.includes(objeto.pocket) && objeto.equipped === equipped) {
-      pockets.push(objeto.pocket);
+            pockets.push(objeto.pocket);
     }
   }
+  const indexPockets = pockets.indexOf(pocketToStore);
+    if (indexPockets > -1){
+      pockets.splice(indexPockets, 1);
+    }
+    try{
+  for(const pocket of pocketsUnv){
+    
+    const indexCommomPocket = pockets.indexOf(pocket);
+    if (indexCommomPocket > -1 && pockets.length >= 2){
+      pockets.splice(indexCommomPocket, 1);
+    }
+  }}catch(err){}
   
   return pockets;
 }
