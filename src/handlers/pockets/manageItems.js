@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets, listCompare, listSort } = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, splitPocketQuant, splitItemQuant, getCommonPockets, listCompare, listSort, getUniqueName } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { saveItem, deleteItem, catchItem } = require("../../config/storage");
 
@@ -120,7 +120,7 @@ async function transferItem(conversation, ctx) {
       for (const itemToRemove of listItemRemove.remove) {
         
         const index = authorCharacter.items.findIndex((item) => {
-          return item.name === itemToRemove.name && item.pocket === itemToRemove.pocket;
+          return item.name.toLowerCase() === itemToRemove.name.toLowerCase() && item.pocket === itemToRemove.pocket;
           });
           
         if (index !== -1) {
@@ -154,7 +154,7 @@ async function transferItem(conversation, ctx) {
           let index = -1;
 
           for (let j = 0; j < authorCharacter.items.length; j++) {
-            if (authorCharacter.items[j].name === item.name && authorCharacter.items[j].pocket === pocketToStore) {
+            if (authorCharacter.items[j].name.toLowerCase() === item.name.toLowerCase() && authorCharacter.items[j].pocket === pocketToStore) {
               index = j;
               break;
             }
@@ -204,9 +204,9 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
     if(commomPocket.length > 1){
       const buttonRow = await splitPocketQuant(commomPocket);
       
-      await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
+      await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO item ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
         const output = inventoryNow.map((index) => {
-        if(index.pocket === commonItemName && index.name === item.name){
+        if(index.pocket === commonItemName && index.name.toLowerCase() === item.name.toLowerCase()){
           return  `"${index.pocket}":\n\n - ${index.name}: ${index.weight}Kg - ${index.quantity}Un => ${Number((index.weight * index.quantity).toFixed(3))}Kg\nDescrição: ${index.desc}`;
         }
         return '';
@@ -222,7 +222,7 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
       pocketToRemove = res.match;
       
       itemPocket = { ...inventoryNow.find(index => {
-        return item.name === index.name && pocketToRemove === index.pocket;
+        return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
       })};
       
     }else if(commomPocket.length === 1 ){
@@ -230,7 +230,7 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
       pocketToRemove = commomPocket[0];
       
       itemPocket = { ...inventoryNow.find(index => {
-        return item.name === index.name && pocketToRemove === index.pocket;
+        return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
       })};
       
     }else{
@@ -250,13 +250,13 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
       await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
     }
     const test = inventoryNow.find((index) => {
-      return index.name === itemPocket.name && index.pocket === pocketToStore;
+      return index.name.toLowerCase() === itemPocket.name.toLowerCase() && index.pocket === pocketToStore;
     });
     if(test){
       
         let sameItemIndex = -1;
         for (let j = 0; j < nonAdd.length; j++) {
-          if (nonAdd[j].name === itemPocket.name) {
+          if (nonAdd[j].name.toLowerCase() === itemPocket.name.toLowerCase()) {
             sameItemIndex = j;
             break;
           }
@@ -272,7 +272,7 @@ async function transferItemDefine(inventoryList, inventoryNow, pocketToStore, eq
       } else{
         let sameItemIndex = -1;
         for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name === itemPocket.name) {
+          if (modList[j].name.toLowerCase() === itemPocket.name.toLowerCase()) {
             sameItemIndex = j;
             break;
           }

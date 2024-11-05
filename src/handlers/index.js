@@ -19,12 +19,12 @@ function extractInventoryItemsFromMessage(text, addRemove) {
     return [];
   }
   if (!text.includes("\n") && !addRemove) {
-    return text.split(",").map((item) => item.toLowerCase().trim());
+    return text.split(",").map((item) => item.trim());
   }
   if (!text.includes(";")) {
-    return text.split("\n").map((item) => item.toLowerCase().trim());
+    return text.split("\n").map((item) => item.trim());
   }
-  return text.split(";").map((item) => item.toLowerCase().trim());
+  return text.split(";").map((item) => item.trim());
 }
 
 function isValidItem(item, ITEM_REGEX, flag) {
@@ -136,7 +136,7 @@ function getCommonPockets(inventory, item, equipped, pocketsUnv, pocketToStore) 
   const pockets = [];
   
   for (const objeto of inventory) {
-    if (objeto.name === item && !pockets.includes(objeto.pocket) && objeto.equipped === equipped) {
+    if (objeto.name.toLowerCase() === item.toLowerCase() && !pockets.includes(objeto.pocket) && objeto.equipped === equipped) {
             pockets.push(objeto.pocket);
     }
   }
@@ -248,6 +248,29 @@ function listSort(a, b) {
   }
   return 0;
 }
+
+function getUniqueName(parsedItem, inventory, invMod) {
+    // Verifica se o nome já existe no inventário
+    let invTemp = [ ...inventory];
+    try{
+    invTemp.push([  ...invMod]);
+    }catch(err){}
+    let baseName = parsedItem;
+    let count = 1;
+
+    // Cria uma variável para armazenar o novo nome
+    let newName = baseName;
+
+    // Enquanto o novo nome já existir no inventário, incrementa o contador
+    while (invTemp.some(item => item.name.toLowerCase() === newName.toLowerCase())) {
+        newName = `${baseName} (${count})`;
+        count++;
+    }
+
+    // Adiciona o novo item ao inventário
+    return newName;
+}
+
 module.exports = {
   handleChatTypeResponse,
   extractInventoryItemsFromMessage,
@@ -264,5 +287,6 @@ module.exports = {
   getCommonPockets,
   formatDateToCustomFormat,
   listCompare,
-  listSort
+  listSort,
+  getUniqueName
 };

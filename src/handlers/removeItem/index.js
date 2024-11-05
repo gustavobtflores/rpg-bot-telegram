@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P, splitItemQuant, getCommonPockets, splitPocketQuant, listSort} = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, P, splitItemQuant, getCommonPockets, splitPocketQuant, listSort, getUniqueName} = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
@@ -88,7 +88,7 @@ async function removeItem(conversation, ctx, cube) {
     await conversation.external(async () => {
       for (const itemToRemove of listItemRemove) {
         const index = authorCharacter.items.findIndex((item) => {
-          return item.name === itemToRemove.name && item.pocket === itemToRemove.pocket;
+          return item.name.toLowerCase() === itemToRemove.name.toLowerCase() && item.pocket === itemToRemove.pocket;
           
         });
         if (index !== -1) {
@@ -145,9 +145,9 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
         if(commomPocket.length > 1){
           const buttonRow = await splitPocketQuant(commomPocket);
           
-          await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
+          await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO item ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
             const output = inventoryNow.map((index) => {
-            if(index.pocket === commonItemName && index.name === item.name){
+            if(index.pocket === commonItemName && index.name.toLowerCase() === item.name.toLowerCase()){
               return  `"${index.pocket}":\n\n - ${index.name}: ${index.weight}Kg - ${index.quantity}Un => ${Number((index.weight * index.quantity).toFixed(3))}Kg\nDescrição: ${index.desc}`;
             }
             return '';
@@ -163,7 +163,7 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
           pocketToRemove = res.match;
           
           itemPocket = { ...inventoryNow.find(index => {
-            return item.name === index.name && pocketToRemove === index.pocket;
+            return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
           })};
           
         }else if(commomPocket.length === 1 ){
@@ -171,7 +171,7 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
           pocketToRemove = commomPocket[0];
           
           itemPocket = { ...inventoryNow.find(index => {
-            return item.name === index.name && pocketToRemove === index.pocket;
+            return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
           })};
           
         }else{
@@ -199,7 +199,7 @@ async function removeItemDefine(inventoryList, inventoryNow, ctx, conversation, 
     if(!tempCube){
         let sameItemIndex = -1;
         for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name === itemPocket.name) {
+          if (modList[j].name.toLowerCase() === itemPocket.name.toLowerCase()) {
             sameItemIndex = j;
             break;
           }

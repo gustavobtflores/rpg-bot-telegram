@@ -1,5 +1,5 @@
 const { InlineKeyboard } = require("grammy");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, getCommonPockets, splitPocketQuant } = require("../../handlers");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, getCommonPockets, splitPocketQuant, getUniqueName } = require("../../handlers");
 const { getFormattedCharacters } = require("../../utils");
 const { deleteItem, catchItem } = require("../../config/storage");
 
@@ -78,7 +78,7 @@ async function modifyItem(conversation, ctx, cube) {
   }
   
   let listItemModify = await modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, tempCube, equipped);
-
+  
 try{
   await ctx.reply(
     `Confira os itens que quer modificar:\nAntes:\n\n${listItemModify.listItemModify.map((itemMod, i) => {
@@ -167,7 +167,7 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   const flagModify = true;
   const chatID = ctx.update.callback_query.message.chat.id;
   
-  
+  console.log(inventoryList);
   
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
@@ -177,9 +177,9 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
     if(commomPocket.length > 1){
       const buttonRow = await splitPocketQuant(commomPocket);
       
-      await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {
+      await ctx.reply(`O item -> ${item.name} <- pertence a mais de um compartimento, de qual você está falando?\n\nO item ${item.name} que está em: \n\n${commomPocket.map((commonItemName) => {  
         const output = inventoryNow.map((index) => {
-        if(index.pocket === commonItemName && index.name === item.name){
+        if(index.pocket === commonItemName && index.name.toLowerCase() === item.name.toLowerCase()){
           return  `"${index.pocket}":\n\n - ${index.name}: ${index.weight}Kg - ${index.quantity}Un => ${Number((index.weight * index.quantity).toFixed(3))}Kg\nDescrição: ${index.desc}`;
         }
         return '';
@@ -195,7 +195,7 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
       pocketToRemove = res.match;
       
       itemPocket = { ...inventoryNow.find(index => {
-        return item.name === index.name && pocketToRemove === index.pocket;
+        return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
       })};
       
     }else if(commomPocket.length === 1 ){
@@ -203,7 +203,7 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
       pocketToRemove = commomPocket[0];
       
       itemPocket = { ...inventoryNow.find(index => {
-        return item.name === index.name && pocketToRemove === index.pocket;
+        return item.name.toLowerCase() === index.name.toLowerCase() && pocketToRemove === index.pocket;
       })};
       
     }else{
@@ -216,7 +216,7 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
       pocketToRemove = item.pocket;
       commomPocket.push(item);
     }
-  
+  console.log(itemPocket);
     if(commomPocket.length !== 0 ) {
   /////////////////////////////////////////////////////////////////////////////
   await ctx.reply(`Você irá modificar o item que está em ${pocketToRemove}:\n\n -> ${itemPocket.name}: ${itemPocket.weight}Kg - ${itemPocket.quantity}Un => ${limitarCasasDecimais(itemPocket.weight * itemPocket.quantity, 3)}Kg\nDescrição: ${itemPocket.desc}
@@ -244,49 +244,53 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   parsedItem.equipped = itemPocket.equipped;
   parsedItem.pocket = itemPocket.pocket;
   parsedItem.nameAntes = itemPocket.name;
-  //////////////////////////////////////////////////////////////////////////////
+  parsedItem.descAntes = itemPocket.desc;
   
       
     const test = inventoryNow.find((index) => {
       return index.name.toLowerCase() === parsedItem.name.toLowerCase() && index.pocket === pocketToRemove;
     });
-    if(test && parsedItem.name !== parsedItem.nameAntes){
+    if(test && parsedItem.name.toLowerCase() !== parsedItem.nameAntes.toLowerCase()){
       
+      
+        parsedItem.name = getUniqueName(parsedItem.name, inventoryNow);
+  
         let sameItemIndex = -1;
         for (let j = 0; j < nonAdd.length; j++) {
-          if (nonAdd[j].name === parsedItem.name) {
+          if (modList[j].name.toLowerCase() === parsedItem.name.toLowerCase()) {
             sameItemIndex = j;
             break;
           }
         }
         
-        if (sameItemIndex > -1 && nonAdd[sameItemIndex].pocket === parsedItem.pocket){
-          nonAdd[sameItemIndex].quantity += parsedItem.quantity;
-        }else{
-          parsedItem.weight = test.weight;
-          parsedItem.desc = test.desc;
-          nonAdd.push({ ...parsedItem});
+        if (sameItemIndex > -1 && modList[sameItemIndex].pocket === parsedItem.pocket){
+          
+          parsedItem.name = getUniqueName(parsedItem.name,inventoryNow, modList);
         }
+          modList.push({ ...parsedItem});
       } else{
         let sameItemIndex = -1;
         for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name === parsedItem.name) {
+          if (modList[j].name.toLowerCase() === parsedItem.name.toLowerCase()) {
             sameItemIndex = j;
             break;
           }
         }
         if (sameItemIndex > -1 && modList[sameItemIndex].pocket === parsedItem.pocket){
-          modList[sameItemIndex].quantity += parsedItem.quantity;
-        }else{
-          modList.push( { ...parsedItem});
+          parsedItem.name = getUniqueName(parsedItem.name, inventoryNow, modList);
         }
+          modList.push( { ...parsedItem});
       }
     pocketRemoved.push(pocketToRemove);
     listItemModify.push({ ...parsedItem});
     
   }}
+  console.log(modList);
   return { modList, nonAdd, listItemModify} ;
 }
+
+
+
 
 
 module.exports = {
