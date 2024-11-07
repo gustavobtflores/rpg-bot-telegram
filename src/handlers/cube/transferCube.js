@@ -1,6 +1,6 @@
 const { InlineKeyboard } = require("grammy");
 const { deleteItem, saveItem, catchItem } = require("../../config/storage");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant, getCommonPockets, listSort, listCompare } = require("..");
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, splitItemQuant, splitPocketQuant, getCommonPockets, listSort, listCompare, getUniqueName } = require("..");
 const { getFormattedCharacters } = require("../../utils");
 
 async function transferCube(conversation, ctx, fun) {
@@ -192,6 +192,7 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
   let itemPocket;
   let pocketRemoved = [];
   let testList;
+  let nameCountMap = {};
 
   await inventoryList.sort(listSort);
   let inventoryTemp = [ ...inventoryList];
@@ -259,51 +260,53 @@ async function transferItemDefine(inventoryList, inventoryNow, inventoryLater, p
 
       await ctx.api.deleteMessage(res.update.callback_query.message.chat.id, res.update.callback_query.message.message_id);
     }
+
     const test = inventoryLater.find((index) => {
-      return index.name === itemPocket.name && index.pocket === pocketToStore;
+      return index.name.toLowerCase() === itemPocket.name.toLowerCase() && index.pocket === pocketToStore;
     });
 
-    if(test){
-      
-        let sameItemIndex = -1;
-        for (let j = 0; j < nonAdd.length; j++) {
-          if (nonAdd[j].name === itemPocket.name) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        
-        if (sameItemIndex > -1){
-          nonAdd[sameItemIndex].quantity += itemPocket.quantity;
-        }else{
-          itemPocket.weight = test.weight;
-          itemPocket.desc = test.desc;
-          nonAdd.push({ ...itemPocket});
-        }
-      } else{
-        let sameItemIndex = -1;
-        for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name === itemPocket.name) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        if (sameItemIndex > -1){
-          modList[sameItemIndex].quantity += itemPocket.quantity;
-        }else{
-          modList.push( { ...itemPocket});
-        }
-      }
-    itemPocket.pocket = pocketToRemove;
-    testList = await listCompare(inventoryTemp);
+    const baseName = itemPocket.name;
     
-    if(testList){
-      pocketRemoved.push(testList);
+    // Inicializa o contador se o nome base ainda não estiver no mapa
+    if (!nameCountMap[baseName]) {
+      nameCountMap[baseName] = 2; // Começa a contagem a partir de 2
+    }
+
+    if (test) {
+      // Se o item já existe, gera um nome único
+      itemPocket.name = getUniqueName(baseName, inventoryLater.filter(item => item.pocket === pocketToStore), modList, nameCountMap);
+    }
+
+    modList.push({ ...itemPocket });
+    itemPocket.pocket = pocketToRemove;
+    
+    let possuiEmMultiplosPockets = false;
+    
+
+    inventoryTemp.forEach(nome => {
+      let pockets = new Set();
+      
+      inventoryNow.forEach(item => {
+        if (item.name.toLowerCase() === nome.toLowerCase()) {
+          pockets.add(item.pocket);
+        }
+      });
+      
+      if (pockets.size > 1) {
+        possuiEmMultiplosPockets = true;
+      }
+    });
+    
+    
+    if(!possuiEmMultiplosPockets){
+      pocketRemoved.push(pocketToRemove);
     }
     await inventoryTemp.shift();
     remove.push(itemPocket);
     
-  }}
+  }
+  
+}
   return { modList, nonAdd, remove};
 }
 

@@ -18,13 +18,21 @@ function extractInventoryItemsFromMessage(text, addRemove) {
   if (!text) {
     return [];
   }
+  
+  if (text.endsWith(',') || text.endsWith(';')){
+    text.slice(0,-1);
+  }
+  
   if (!text.includes("\n") && !addRemove) {
-    return text.split(",").map((item) => item.trim());
+    return text.split(",").map((item) => item.trim()).filter(item => item);
   }
   if (!text.includes(";")) {
-    return text.split("\n").map((item) => item.trim());
+    
+    return text.split("\n").map((item) => item.trim()).filter(item => item);
   }
-  return text.split(";").map((item) => item.trim());
+  console.log("\n\nextract: \n");
+  console.log(text.split(";").map((item) => item.trim()).filter(item => item));
+    return text.split(";").map((item) => item.trim()).filter(item => item);
 }
 
 function isValidItem(item, ITEM_REGEX, flag) {
@@ -249,27 +257,20 @@ function listSort(a, b) {
   return 0;
 }
 
-function getUniqueName(parsedItem, inventory, invMod) {
-    // Verifica se o nome já existe no inventário
-    let invTemp = [ ...inventory];
-    try{
-    invTemp.push([  ...invMod]);
-    }catch(err){}
-    let baseName = parsedItem;
-    let count = 1;
 
-    // Cria uma variável para armazenar o novo nome
-    let newName = baseName;
-
-    // Enquanto o novo nome já existir no inventário, incrementa o contador
-    while (invTemp.some(item => item.name.toLowerCase() === newName.toLowerCase())) {
-        newName = `${baseName} (${count})`;
-        count++;
-    }
-
-    // Adiciona o novo item ao inventário
-    return newName;
+function getUniqueName(baseName, inventory, invMod, nameCountMap) {
+  let newName = baseName;
+  
+  // Enquanto o novo nome já existir no inventário, incrementa o contador
+  while (inventory.some(item => item.name.toLowerCase() === newName.toLowerCase()) || 
+         invMod.some(item => item.name.toLowerCase() === newName.toLowerCase())) {
+    newName = `${baseName} (${nameCountMap[baseName]})`;
+    nameCountMap[baseName]++;
+  }
+  
+  return newName;
 }
+
 
 module.exports = {
   handleChatTypeResponse,

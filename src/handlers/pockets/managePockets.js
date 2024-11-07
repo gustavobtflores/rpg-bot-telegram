@@ -1,7 +1,7 @@
 const { conversations, createConversation, } = require("@grammyjs/conversations");
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem, deleteItem } = require("../../config/storage");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, extractItemsFromPockets} = require('../../handlers');
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, P, extractItemsFromPockets, getUniqueName} = require('../../handlers');
 const { getFormattedCharacters } = require("../../utils");
 
 
@@ -35,6 +35,8 @@ async function addPockets(conversation, ctx) {
   var nonAddPockets = [];
   const confirmPockets = new InlineKeyboard().text("Sim", "yes").text("Não", "no");
   const pseudoConfirmPockets = new InlineKeyboard().text("Sim", "yah").text("Não", "nah");
+  // Mapa para rastrear contadores de nomes únicos
+  let nameCountMap = {};
 
   const pocketsList = await extractInventoryItemsFromMessage(message.text, flagPockets);
 
@@ -55,12 +57,24 @@ async function addPockets(conversation, ctx) {
     }
     const parsedItem = await parseItemFromInventoryString(pocketInInventory, flagPockets);
 
-    var test = authorCharacter.pockets.find((index) => String(index.name).toLowerCase() === parsedItem.name.toLowerCase());
-    if (!test) {
-      modPocketsList.push(parsedItem);
-    } else {
-      nonAddPockets.push(parsedItem);
+    let test = authorCharacter.pockets.find((index) => String(index.name).toLowerCase() === parsedItem.name.toLowerCase());
+    
+    const baseName = parsedItem.name;
+    
+    // Inicializa o contador se o nome base ainda não estiver no mapa
+    if (!nameCountMap[baseName]) {
+      nameCountMap[baseName] = 2; // Começa a contagem a partir de 2
     }
+
+    if (test) {
+      // Se o item já existe, gera um nome único
+      parsedItem.name = getUniqueName(baseName, authorCharacter.pockets, modPocketsList, nameCountMap);
+    } //else {
+      // Se o item não existe, gera um nome único
+      //itemToAdd.name = getUniqueName(baseName, inventoryNow.filter(item => item.pocket === pocketToStore), modList, nameCountMap);
+    //}
+
+    modPocketsList.push({ ...parsedItem });
   }
 
   if (modPocketsList.length === 0) {
@@ -330,6 +344,8 @@ async function modifyPockets(conversation, ctx) {
   }
   
   let pocketsItemModify = [];
+  // Mapa para rastrear contadores de nomes únicos
+  let nameCountMap = {};
 
   for (let pocketsToModify of pocketsListTemp) {
     let item = { ...pocketsNow.find((item) => item.name.toLowerCase() === pocketsToModify.toLowerCase()) };
@@ -359,16 +375,21 @@ async function modifyPockets(conversation, ctx) {
   }
   
     const test = pocketsNow.find((item) => item.name.toLowerCase() === parsedItem.name.toLowerCase());
-    if(!test){
-      pocketsItemModify.push(parsedItem);
-      
-    }else{
-      indexTest = pocketsList.indexOf(pocketsToModify.toLowerCase());
+    const baseName = parsedItem.name;
+    parsedItem.nameAntes = item.name;
+    
+    // Inicializa o contador se o nome base ainda não estiver no mapa
+    if (!nameCountMap[baseName]) {
+      nameCountMap[baseName] = 2; // Começa a contagem a partir de 2
     }
-    if (indexTest > -1){
-      pocketsList.splice(indexTest, 1);
-      indexTest = -1;
+
+    if (test && parsedItem.name.toLowerCase() !== parsedItem.nameAntes.toLowerCase()) {
+      // Se o item já existe, gera um nome único
+      parsedItem.name = getUniqueName(baseName, pocketsNow, pocketsItemModify, nameCountMap);
     }
+
+    pocketsItemModify.push({ ...parsedItem });
+
     
   }
   
@@ -407,14 +428,14 @@ async function modifyPockets(conversation, ctx) {
       var i = 0;
       for (let pocketsToModify of pocketsItemModify) {
         
-          for (const item of authorCharacter.items){
+         /* for (const item of authorCharacter.items){
             if (item.pocket.toLowerCase() === pocketsList[i].toLowerCase()){
               item.pocket = pocketsToModify.name;
               item.equipped = pocketsToModify.equipped;
             }
         }
-        
-        const index = authorCharacter.pockets.findIndex((item) => item.name.toLowerCase() === pocketsList[i].toLowerCase());
+        */
+        const index = authorCharacter.pockets.findIndex((item) => item.name.toLowerCase() === pocketsToModify.nameAntes.toLowerCase());
         if (index !== -1) {
             authorCharacter.pockets[index].name = pocketsToModify.name;
             authorCharacter.pockets[index].equipped = pocketsToModify.equipped;

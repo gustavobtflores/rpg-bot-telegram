@@ -2,7 +2,7 @@ const { conversations, createConversation, } = require("@grammyjs/conversations"
 const { InlineKeyboard } = require("grammy");
 const { saveItem, catchItem } = require("../../config/storage");
 const { getFormattedCharacters } = require("../../utils");
-const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, splitPocketQuant} = require('../../handlers');
+const { formatDateToCustomFormat, handleChatTypeResponse, extractInventoryItemsFromMessage, isValidItem, limitarCasasDecimais, parseItemFromInventoryString, splitPocketQuant, getUniqueName} = require('../../handlers');
 
 //const ITEM_REGEX = /^\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*[a-zA-Z\w\sáàãâéêíóôõúçÁÀÃÂÉÊÍÓÔÕÚÇ.,-]+\s*$/;
 const ITEM_REGEX = /^\s*.+\s*,\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*,\s*.+$/;
@@ -76,6 +76,7 @@ async function addItem(conversation, ctx, cube) {
   const inventoryList = await extractInventoryItemsFromMessage(message.text, flagAdd);
   let inventoryErr = [];
   let inventoryErrFlag = true;
+  
   for (let itemInInventory of inventoryList) {
     if (!isValidItem(itemInInventory, ITEM_REGEX)) {
       inventoryErr.push(itemInInventory);
@@ -134,10 +135,10 @@ async function addItem(conversation, ctx, cube) {
         var test = authorCharacter.items.find((index) => index.name.toLowerCase() === item.name.toLowerCase());
         const itemPocket = authorCharacter.pockets.find(pocket => pocket.name === pocketToStore);
         
-        if (!test) {
+       // if (!test) {
             item.pocket = pocketToStore;
             item.equipped = itemPocket.equipped;
-          }
+         // }
           authorCharacter.items.push(item);
           
         }
@@ -183,54 +184,41 @@ async function addItem(conversation, ctx, cube) {
   }
 }
 
-
-async function addItemDefine(inventoryList, inventoryNow, pocketToStore, ctx, conversation, tempCube) {
+async function addItemDefine(inventoryTemp, inventoryNow, pocketToStore, ctx, conversation, tempCube) {
   var modList = [];
   var nonAdd = [];
   var remove = [];
-  let commomPocket = [];
-  let pocketToRemove;
-  let itemPocket;
-  let pocketRemoved = [];
+  let inventoryList = [ ...inventoryTemp];
   
+  // Mapa para rastrear contadores de nomes únicos
+  let nameCountMap = {};
+
   for (let itemToAdd of inventoryList) {
+    const baseName = itemToAdd.name;
+    
+    // Inicializa o contador se o nome base ainda não estiver no mapa
+    if (!nameCountMap[baseName]) {
+      nameCountMap[baseName] = 2; // Começa a contagem a partir de 2
+    }
+
     const test = inventoryNow.find((index) => {
-      return index.name.toLowerCase() === itemToAdd.name.toLowerCase() && index.pocket === pocketToStore;
+      return index.name.toLowerCase() === baseName.toLowerCase() && index.pocket === pocketToStore;
     });
-    if(test){
-      
-        let sameItemIndex = -1;
-        for (let j = 0; j < nonAdd.length; j++) {
-          if (nonAdd[j].name === itemToAdd.name) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        
-        if (sameItemIndex > -1){
-          nonAdd[sameItemIndex].quantity += itemToAdd.quantity;
-        }else{
-          itemToAdd.desc = test.desc;
-          itemToAdd.weight = test.weight;
-          nonAdd.push({ ...itemToAdd});
-        }
-      } else{
-        let sameItemIndex = -1;
-        for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name === itemToAdd.name) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        if (sameItemIndex > -1){
-          modList[sameItemIndex].quantity += itemToAdd.quantity;
-        }else{
-          modList.push( { ...itemToAdd});
-        }
-      }
+
+    if (test) {
+      // Se o item já existe, gera um nome único
+      itemToAdd.name = getUniqueName(baseName, inventoryNow.filter(item => item.pocket === pocketToStore), modList, nameCountMap);
+    } //else {
+      // Se o item não existe, gera um nome único
+      //itemToAdd.name = getUniqueName(baseName, inventoryNow.filter(item => item.pocket === pocketToStore), modList, nameCountMap);
+    //}
+
+    modList.push({ ...itemToAdd });
   }
-  return { modList, nonAdd};
+  
+  return { modList, nonAdd };
 }
+
 
 module.exports = {
   addItem,

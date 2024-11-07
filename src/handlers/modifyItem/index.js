@@ -166,8 +166,8 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   let parsedItem;
   const flagModify = true;
   const chatID = ctx.update.callback_query.message.chat.id;
+  let nameCountMap = {};
   
-  console.log(inventoryList);
   
   for (let itemToRemove of inventoryList) {
     var item = { ...inventoryNow.find((item) => item.name.toLowerCase() === itemToRemove.toLowerCase()) };
@@ -216,7 +216,6 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
       pocketToRemove = item.pocket;
       commomPocket.push(item);
     }
-  console.log(itemPocket);
     if(commomPocket.length !== 0 ) {
   /////////////////////////////////////////////////////////////////////////////
   await ctx.reply(`Você irá modificar o item que está em ${pocketToRemove}:\n\n -> ${itemPocket.name}: ${itemPocket.weight}Kg - ${itemPocket.quantity}Un => ${limitarCasasDecimais(itemPocket.weight * itemPocket.quantity, 3)}Kg\nDescrição: ${itemPocket.desc}
@@ -246,45 +245,30 @@ async function modifyItemDefine(inventoryList, inventoryNow, ctx, conversation, 
   parsedItem.nameAntes = itemPocket.name;
   parsedItem.descAntes = itemPocket.desc;
   
-      
+    const baseName = parsedItem.name;
+    
+    // Inicializa o contador se o nome base ainda não estiver no mapa
+    if (!nameCountMap[baseName]) {
+      nameCountMap[baseName] = 2; // Começa a contagem a partir de 2
+    }
+
     const test = inventoryNow.find((index) => {
-      return index.name.toLowerCase() === parsedItem.name.toLowerCase() && index.pocket === pocketToRemove;
+      return index.name.toLowerCase() === baseName.toLowerCase() && index.pocket === pocketToRemove;
     });
-    if(test && parsedItem.name.toLowerCase() !== parsedItem.nameAntes.toLowerCase()){
-      
-      
-        parsedItem.name = getUniqueName(parsedItem.name, inventoryNow);
-  
-        let sameItemIndex = -1;
-        for (let j = 0; j < nonAdd.length; j++) {
-          if (modList[j].name.toLowerCase() === parsedItem.name.toLowerCase()) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        
-        if (sameItemIndex > -1 && modList[sameItemIndex].pocket === parsedItem.pocket){
-          
-          parsedItem.name = getUniqueName(parsedItem.name,inventoryNow, modList);
-        }
-          modList.push({ ...parsedItem});
-      } else{
-        let sameItemIndex = -1;
-        for (let j = 0; j < modList.length; j++) {
-          if (modList[j].name.toLowerCase() === parsedItem.name.toLowerCase()) {
-            sameItemIndex = j;
-            break;
-          }
-        }
-        if (sameItemIndex > -1 && modList[sameItemIndex].pocket === parsedItem.pocket){
-          parsedItem.name = getUniqueName(parsedItem.name, inventoryNow, modList);
-        }
-          modList.push( { ...parsedItem});
-      }
+
+    if (test && parsedItem.name.toLowerCase() !== parsedItem.nameAntes.toLowerCase()) {
+      // Se o item já existe, gera um nome único
+      parsedItem.name = getUniqueName(baseName, inventoryNow.filter(item => item.pocket === pocketToRemove), modList, nameCountMap);
+    }
+
+    modList.push({ ...parsedItem });
+
     pocketRemoved.push(pocketToRemove);
     listItemModify.push({ ...parsedItem});
     
-  }}
+  }
+    
+  }
   console.log(modList);
   return { modList, nonAdd, listItemModify} ;
 }
